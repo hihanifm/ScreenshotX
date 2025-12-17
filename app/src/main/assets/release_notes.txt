@@ -1,0 +1,50 @@
+Updated version to 1.0.0.
+
+• Added About screen with build information display (build time, version code, version name) and ReleaseNotes button.
+• Updated UI: Made Browse button solid, changed Collections Help to Help, reorganized collection buttons layout.
+• Changed Add Collection button to use purple shade color, made title center aligned, made feedback button lighter.
+• Changed app name to "Screenshot S" in launcher.
+• Set "Ask before saving" option to off by default.
+• Fixed collection folder counts showing zero initially - added loading state and storage permissions.
+• Changed zip file naming to use underscore instead of hyphen (format: user_label_count.zip).
+• Added automatic version code generation from build timestamp (format: mmddyyhhmm).
+• Added version code and version name to APK filename (format: screenshot_manager-debug-1.0.0_1225241430.apk).
+• Added Samsung My Files integration for opening folders with specific destination.
+• Added feedback dialog with contact information.
+
+Updated version to 1.0.1.
+
+• Converted About screen from dialog to full-screen Activity with centered title, bottom close button, and system bar padding.
+• Implemented ReleaseNotes button to display release notes content in scrollable dialog.
+• Moved feedback button to bottom of About screen.
+
+Updated version to 1.0.2.
+
+• Moved Help buttons from Setup and Collections categories to About screen as "How To Setup" and "How To Collect Screenshots".
+• Moved Browse button next to Add Collection button in Collections section.
+• Added "Open MyFiles app" button in Collections section.
+• Added success dialog after zip process completion with congratulatory message and instructions.
+
+Updated version to 1.0.3.
+
+• Made START and STOP buttons mutually exclusive.
+• Updated capture status messages with clearer instructions and emojis.
+• Added initial ready dialog when app opens and service is not running.
+• Added ready to go dialog when service starts running.
+• Added jiggle animation to START button to draw user attention.
+• Moved "Ask before saving" option to About screen.
+• Changed "Current folder" text to "Current selection".
+
+Updated version to 1.0.4.
+
+• Added Korean language support with language selection in About screen.
+• Moved ReleaseNotes button to bottom of About screen above Close button.
+• Added jiggle animation to floating capture button when entering main activity.
+• Converted ReleaseNotes dialog to full-screen display.
+• Added destination path (Download/ScreenshotCollections) to zip success dialog.
+• Added current screenshot count to toast message when screenshot is saved.
+• Changed floating button jiggle to only occur on app launch, not when overlay is shown or app is resumed.
+
+Updated version to 1.0.5.
+
+• Gave the entire "Screenshot Manager" card a light green background while keeping the text black for better contrast.

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:elevation="12dp"
+    android:padding="0dp">
+
+    <ImageButton
+        android:id="@+id/overlayCaptureButton"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:background="@drawable/overlay_button_background"
+        android:alpha="0.92"
+        android:contentDescription="@string/button_save_capture"
+        android:padding="18dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_capture"
+        android:tint="@android:color/white" />
+
+</FrameLayout>
+
