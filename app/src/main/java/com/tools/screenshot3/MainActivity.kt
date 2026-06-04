@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.media.projection.MediaProjectionConfig
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
@@ -498,7 +499,14 @@ class MainActivity : ComponentActivity() {
 
     private fun requestMediaProjection() {
         val manager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        mediaProjectionLauncher.launch(manager.createScreenCaptureIntent())
+        val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            manager.createScreenCaptureIntent(
+                MediaProjectionConfig.createConfigForDefaultDisplay()
+            )
+        } else {
+            manager.createScreenCaptureIntent()
+        }
+        mediaProjectionLauncher.launch(intent)
     }
 }
 
@@ -763,6 +771,13 @@ fun MainScreen(
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
+                            }
+                            TextButton(
+                                onClick = {
+                                    context.startActivity(Intent(context, AboutActivity::class.java))
+                                }
+                            ) {
+                                Text(text = stringResource(R.string.button_help))
                             }
                         }
                     }

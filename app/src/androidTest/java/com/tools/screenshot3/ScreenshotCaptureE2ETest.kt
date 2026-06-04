@@ -121,21 +121,6 @@ class ScreenshotCaptureE2ETest {
     }
 
     private fun handleMediaProjectionDialog() {
-        // On API 34+, a dropdown defaults to "A single app" — switch to "Entire screen"
-        if (Build.VERSION.SDK_INT >= 34) {
-            val dropdown = device.wait(
-                Until.findObject(By.textContains("single app")),
-                TIMEOUT_MEDIUM
-            )
-            dropdown?.click()
-
-            val entireScreen = device.wait(
-                Until.findObject(By.text("Entire screen")),
-                TIMEOUT_SHORT
-            )
-            entireScreen?.click()
-        }
-
         // Tap "Start" on the dialog (not "Start now" on this API level)
         val startButton = device.wait(
             Until.findObject(By.text("Start")),
