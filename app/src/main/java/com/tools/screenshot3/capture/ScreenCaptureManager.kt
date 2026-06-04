@@ -252,34 +252,15 @@ private val _requiresConfirmation = MutableStateFlow(false)
     fun shouldConfirmBeforeSaving(): Boolean = _requiresConfirmation.value
 
     fun getFolderLabel(context: Context, folder: String = currentSubdirectory.value): String {
-        val resources = context.applicationContext.resources
-        return when (val current = sanitizeSubdirectory(folder)) {
-            "" -> resources.getString(com.tools.screenshot3.R.string.folder_default)
-            "movies" -> resources.getString(com.tools.screenshot3.R.string.folder_movies)
-            "food" -> resources.getString(com.tools.screenshot3.R.string.folder_food)
-            "shopping" -> resources.getString(com.tools.screenshot3.R.string.folder_shopping)
-            "conversation" -> resources.getString(com.tools.screenshot3.R.string.folder_conversation)
-            "location" -> resources.getString(com.tools.screenshot3.R.string.folder_location)
-            "coupon" -> resources.getString(com.tools.screenshot3.R.string.folder_coupon)
-            "calendar" -> resources.getString(com.tools.screenshot3.R.string.folder_calendar)
-            "restaurant" -> resources.getString(com.tools.screenshot3.R.string.folder_restaurant)
-            "fashion" -> resources.getString(com.tools.screenshot3.R.string.folder_fashion)
-            "transportation" -> resources.getString(com.tools.screenshot3.R.string.folder_transportation)
-            "humor" -> resources.getString(com.tools.screenshot3.R.string.folder_humor)
-            "article" -> resources.getString(com.tools.screenshot3.R.string.folder_article)
-            "music" -> resources.getString(com.tools.screenshot3.R.string.folder_music)
-            "people" -> resources.getString(com.tools.screenshot3.R.string.folder_people)
-            "books" -> resources.getString(com.tools.screenshot3.R.string.folder_books)
-            "stock" -> resources.getString(com.tools.screenshot3.R.string.folder_stock)
-            "sports" -> resources.getString(com.tools.screenshot3.R.string.folder_sports)
-            "health" -> resources.getString(com.tools.screenshot3.R.string.folder_health)
-            else -> current.replaceFirstChar { char ->
-                if (char.isLowerCase()) {
-                    char.titlecase(Locale.getDefault())
-                } else {
-                    char.toString()
-                }
-            }
+        val current = sanitizeSubdirectory(folder)
+        if (current.isEmpty()) {
+            return context.applicationContext.resources.getString(com.tools.screenshot3.R.string.folder_default)
+        }
+        val match = com.tools.screenshot3.data.CollectionRepository.load(context.applicationContext)
+            .firstOrNull { it.key == current }
+        if (match != null) return match.label
+        return current.replaceFirstChar { char ->
+            if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
         }
     }
 

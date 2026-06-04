@@ -250,33 +250,6 @@ class ScreenshotService : android.app.Service() {
     }
 
     private fun resolveFolderLabel(): String {
-        return when (val folder = ScreenCaptureManager.currentSubdirectory.value) {
-            "" -> getString(R.string.folder_default)
-            "movies" -> getString(R.string.folder_movies)
-            "food" -> getString(R.string.folder_food)
-            "shopping" -> getString(R.string.folder_shopping)
-            "conversation" -> getString(R.string.folder_conversation)
-            "location" -> getString(R.string.folder_location)
-            "coupon" -> getString(R.string.folder_coupon)
-            "calendar" -> getString(R.string.folder_calendar)
-            "restaurant" -> getString(R.string.folder_restaurant)
-            "fashion" -> getString(R.string.folder_fashion)
-            "transportation" -> getString(R.string.folder_transportation)
-            "humor" -> getString(R.string.folder_humor)
-            "article" -> getString(R.string.folder_article)
-            "music" -> getString(R.string.folder_music)
-            "people" -> getString(R.string.folder_people)
-            "books" -> getString(R.string.folder_books)
-            "stock" -> getString(R.string.folder_stock)
-            "sports" -> getString(R.string.folder_sports)
-            "health" -> getString(R.string.folder_health)
-            else -> folder.replaceFirstChar { char ->
-                if (char.isLowerCase()) {
-                    char.titlecase(Locale.getDefault())
-                } else {
-                    char.toString()
-                }
-            }
-        }
+        return ScreenCaptureManager.getFolderLabel(this)
     }
 }

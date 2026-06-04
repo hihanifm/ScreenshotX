@@ -67,7 +67,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.ContextCompat
-import androidx.annotation.StringRes
 import androidx.core.content.FileProvider
 import com.tools.screenshot3.capture.ScreenCaptureManager
 import com.tools.screenshot3.data.CollectionRepository
@@ -503,31 +502,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private data class CollectionOption(val key: String, val label: String)
-
-private data class DefaultCollectionDefinition(val key: String, @StringRes val labelRes: Int)
-
-private val defaultCollectionDefinitions = listOf(
-    DefaultCollectionDefinition("", R.string.folder_default),
-    DefaultCollectionDefinition("movies", R.string.folder_movies),
-    DefaultCollectionDefinition("food", R.string.folder_food),
-    DefaultCollectionDefinition("shopping", R.string.folder_shopping),
-    DefaultCollectionDefinition("conversation", R.string.folder_conversation),
-    DefaultCollectionDefinition("location", R.string.folder_location),
-    DefaultCollectionDefinition("coupon", R.string.folder_coupon),
-    DefaultCollectionDefinition("calendar", R.string.folder_calendar),
-    DefaultCollectionDefinition("restaurant", R.string.folder_restaurant),
-    DefaultCollectionDefinition("fashion", R.string.folder_fashion),
-    DefaultCollectionDefinition("transportation", R.string.folder_transportation),
-    DefaultCollectionDefinition("humor", R.string.folder_humor),
-    DefaultCollectionDefinition("article", R.string.folder_article),
-    DefaultCollectionDefinition("music", R.string.folder_music),
-    DefaultCollectionDefinition("people", R.string.folder_people),
-    DefaultCollectionDefinition("books", R.string.folder_books),
-    DefaultCollectionDefinition("stock", R.string.folder_stock),
-    DefaultCollectionDefinition("sports", R.string.folder_sports),
-    DefaultCollectionDefinition("health", R.string.folder_health)
-)
+private data class CollectionOption(val key: String, val label: String, val assignee: String = "")
 
 @Composable
 fun MainScreen(
@@ -554,12 +529,8 @@ fun MainScreen(
     val customCollectionsState = remember { mutableStateOf<List<CollectionRepository.CustomCollection>>(emptyList()) }
     val customCollections = customCollectionsState.value
 
-    val defaultOptions = defaultCollectionDefinitions.map {
-        CollectionOption(it.key, stringResource(id = it.labelRes))
-    }
-    val defaultKeys = remember { defaultCollectionDefinitions.map { ScreenCaptureManager.normalizeDirectoryName(it.key) }.toSet() }
-
-    val folderOptions = defaultOptions + customCollections.map { CollectionOption(it.key, it.label) }
+    val defaultOption = CollectionOption("", stringResource(R.string.folder_default))
+    val folderOptions = listOf(defaultOption) + customCollections.map { CollectionOption(it.key, it.label, it.assignee) }
     val folderKeys = remember(folderOptions) { folderOptions.map { it.key } }
 
     val folderCountsState = remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
@@ -570,7 +541,7 @@ fun MainScreen(
     val selectedOption = folderOptions.firstOrNull { it.key == selectedFolder }
     val selectedLabel = selectedOption?.label
         ?: selectedFolder.takeIf { it.isNotBlank() }?.replaceFirstChar { it.uppercaseChar() }
-        ?: defaultOptions.first().label
+        ?: defaultOption.label
     val selectedCount = folderCounts[selectedFolder]
     val selectedLabelWithCount = if (folderCountsLoaded && selectedCount != null) {
         "$selectedLabel ($selectedCount)"
@@ -580,6 +551,8 @@ fun MainScreen(
 
     val totalCollections = folderOptions.size
     val totalSnapshots = if (folderCountsLoaded) folderCounts.values.sum() else 0
+
+    val assigneeFilter = remember { mutableStateOf("") }
 
     val showAddDialog = remember { mutableStateOf(false) }
     val newCollectionName = remember { mutableStateOf("") }
@@ -625,6 +598,7 @@ fun MainScreen(
 
     LaunchedEffect(isPreview) {
         if (!isPreview) {
+            CollectionRepository.loadCsvIfNeeded(context.applicationContext)
             customCollectionsState.value = CollectionRepository.load(context.applicationContext)
         } else {
             folderCountsState.value = folderKeys.associateWith { 0 }
@@ -685,6 +659,17 @@ fun MainScreen(
 
         val sortedFolderOptions = listOf(folderOptions.first()) +
             folderOptions.drop(1).sortedBy { it.label.lowercase(Locale.getDefault()) }
+
+        val filterText = assigneeFilter.value.trim()
+        val filteredFolderOptions = if (filterText.isBlank()) {
+            sortedFolderOptions
+        } else {
+            sortedFolderOptions.filter { option ->
+                option.key.isEmpty() ||
+                    option.label.contains(filterText, ignoreCase = true) ||
+                    option.assignee.contains(filterText, ignoreCase = true)
+            }
+        }
 
         LazyColumn(
             modifier = Modifier
@@ -837,7 +822,24 @@ fun MainScreen(
                 }
             }
 
-            items(sortedFolderOptions, key = { it.key }) { option ->
+            item {
+                OutlinedTextField(
+                    value = assigneeFilter.value,
+                    onValueChange = { assigneeFilter.value = it },
+                    label = { Text(text = stringResource(R.string.hint_filter_assignee)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        if (assigneeFilter.value.isNotEmpty()) {
+                            TextButton(onClick = { assigneeFilter.value = "" }) {
+                                Text("✕")
+                            }
+                        }
+                    }
+                )
+            }
+
+            items(filteredFolderOptions, key = { it.key }) { option ->
                 val count = folderCounts[option.key]
                 val displayLabel = if (folderCountsLoaded && count != null) {
                     "${option.label} ($count)"
@@ -847,6 +849,7 @@ fun MainScreen(
                 val isSelected = option.key == selectedFolder
                 CollectionItem(
                     label = displayLabel,
+                    assignee = option.assignee,
                     isSelected = isSelected,
                     onClick = { onSelectFolder(option.key) }
                 )
@@ -1011,7 +1014,7 @@ fun MainScreen(
                         isAddingCollection.value = true
                         scope.launch {
                             val reservedKeys =
-                                defaultKeys + customCollectionsState.value.map { it.key }
+                                customCollectionsState.value.map { it.key }.toSet()
                             val result = withContext(Dispatchers.IO) {
                                 CollectionRepository.add(
                                     context.applicationContext,
@@ -1229,6 +1232,7 @@ fun MainScreen(
 @Composable
 private fun CollectionItem(
     label: String,
+    assignee: String = "",
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
@@ -1244,16 +1248,23 @@ private fun CollectionItem(
             CardDefaults.cardColors()
         }
     ) {
-        Text(
-            text = if (isSelected) {
-                stringResource(R.string.selected_folder_format, label)
-            } else {
-                label
-            },
-            modifier = Modifier
-                .padding(16.dp),
-            style = MaterialTheme.typography.bodyLarge
-        )
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = if (isSelected) {
+                    stringResource(R.string.selected_folder_format, label)
+                } else {
+                    label
+                },
+                style = MaterialTheme.typography.bodyLarge
+            )
+            if (assignee.isNotEmpty()) {
+                Text(
+                    text = assignee,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 
