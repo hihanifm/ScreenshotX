@@ -1,27 +1,15 @@
 <claude-mem-context>
 # Memory Context
 
-# [ScreenshotX] recent context, 2026-06-04 9:27pm EDT
+# [ScreenshotX] recent context, 2026-06-05 1:26am EDT
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (20,843t read) | 355,815t work | 94% savings
+Stats: 50 obs (22,036t read) | 404,155t work | 95% savings
 
 ### Jun 4, 2026
-1539 8:06p 🔵 Final implementation verified - crash-fixed overlay permission help dialog complete
-1540 8:07p ✅ Simplified mock Android Settings display to focus on key guidance
-1541 " 🔵 Unused imports identified after scroll removal
-1542 " ✅ Removed unused scroll imports, verified clean build
-1543 8:09p 🔵 Git status shows three modified files from overlay permission feature implementation
-1544 " 🔵 Overlay permission guidance feature committed to version control
-1545 8:10p 🔵 Exploration of app theming and color system architecture
-1546 8:11p ⚖️ Design scope decision: update app theme to Samsung blue color palette
-1547 8:12p 🔵 Color palette definition file identified for theme update
-1548 " 🔵 Color palette scope analysis - purple theme colors referenced in two locations
-1549 " ✅ Updated color palette from purple to Samsung blue in Color.kt
-1550 " ✅ Updated Theme.kt to use Samsung blue colors with full Material Design 3 specification
 1551 8:13p ✅ Integrated hero card colors with Material Design 3 theme system
 1552 " 🔵 Compilation error: missing Color import in Theme.kt
 1553 " 🔴 Added missing Color import to Theme.kt
@@ -40,10 +28,6 @@ Stats: 50 obs (20,843t read) | 355,815t work | 94% savings
 1567 " 🟣 Header card upgraded with blue gradient background and enhanced shadow
 1568 8:38p 🟣 Setup card comprehensively redesigned with blue-tinted shadows, pill buttons, gradient fills, and scale pulse animation
 1569 " 🟣 Collections info card styled with blue-tinted shadows and white surface
-S539 Floating overlay button visibility tuning—optimize balance between visual subtlety and usability through iterative opacity refinement (Jun 4 at 8:49 PM)
-S540 Complete Samsung One UI visual modernization—overlay button refinement and theme alignment (final phase of app polish) (Jun 4 at 8:51 PM)
-S541 Fix floating icon behavior that returns to the same position after being moved and snapshot taken (Jun 4 at 8:52 PM)
-S542 Fix floating icon that always returns to same spot after moving and capturing snapshot (Jun 4 at 8:52 PM)
 1595 8:55p 🔵 Floating button position management isolated to FloatingCaptureOverlay.kt
 1596 8:56p 🔵 Root cause: floating button position reset on every show() call—no persistence layer
 1597 " ⚖️ Choose persistent position storage across app restarts and service cycles
@@ -60,8 +44,9 @@ S547 Add app name suffix to screenshot filenames when capturing from a specific 
 1605 9:01p 🔵 Screenshot filename generation uses timestamp only; foreground app detection requires additional permissions
 1606 " ⚖️ Adopt Android Usage Access permission for foreground app name detection in screenshot filenames
 1607 9:02p ⚖️ Standardized screenshot filename format with graceful fallback on app name resolution failure
+S548 Fix floating capture icon position resetting to default after snapshot — implement persistent position storage across captures, service restarts, and app relaunches. (Jun 4 at 9:03 PM)
 1608 9:04p 🔴 Floating overlay position now persists across captures and app restarts
-S548 Fix floating capture icon position resetting to default after snapshot — implement persistent position storage across captures, service restarts, and app relaunches. (Jun 4 at 9:04 PM)
+S549 Design and plan implementation of a screenshot collection guidance screen showing project goals, collection rules (50 mobile/50 web per category, 5-10 screenshots per app), and upload workflow with HTML asset approach. (Jun 4 at 9:04 PM)
 1609 " 🔵 Existing file segment sanitization pattern can be reused for app name in screenshot filenames
 1610 9:06p 🟣 Implemented foreground app name suffix for screenshot filenames using UsageStatsManager
 1611 " 🔵 Implementation patch application failed; new files not created; changes not applied to existing files
@@ -70,6 +55,30 @@ S548 Fix floating capture icon position resetting to default after snapshot — 
 1614 " 🟣 ScreenCaptureManager integrated with foreground app detection and new filename formatter
 1615 " 🟣 ScreenshotService updated to pass context to captureForPreview method
 1616 " 🟣 MainActivity enhanced with Usage Access permission state management and UI banner
+### Jun 5, 2026
+1617 1:16a ⚖️ Screenshot Collection Project UI Design: HTML-Based Interface with Rules and Workflow
+1618 " 🔵 Existing Help and Guidance Infrastructure in ScreenshotX Application
+1619 " 🔵 ScreenshotX Uses Pure Jetpack Compose UI Without WebView
+1620 " ⚖️ Design Decisions for New Screenshot Collection Guidance Screen
+S550 Implement a collection guide screen for ScreenshotX app with HTML-backed content explaining collection rules, goals, and best practices to screenshot collectors. (Jun 5 at 1:17 AM)
+1621 1:18a 🟣 Added "Learn More" Button to Setup Card for Collection Guidance Navigation
+1622 " 🟣 Created CollectionGuideActivity with WebView Integration for HTML-Based Collection Guidance
+1623 1:19a 🟣 Created collection_guide.html Asset with Collection Goals, Rules, and Guidance
+1624 " ✅ Registered CollectionGuideActivity in AndroidManifest and Added String Resources
+1625 " ✅ Added Korean Translations for Collection Guide Strings
+1626 1:20a 🟣 Collection Guide Screen Implementation
+1627 " 🔵 CollectionGuideActivity and Supporting Changes Compile Successfully
+S551 Design and implement a full-screen HTML-based collector guidance screen accessible via "Learn More" button in Setup card, showing collection goals, rules, do/don't guidance, and completion checklist with editable HTML asset. (Jun 5 at 1:20 AM)
+1628 1:24a ✅ Simplified collection_guide.html structure to reduce cognitive load
+S552 Simplify collection_guide.html by removing redundant sections and consolidating guidance to reduce cognitive load for users (Jun 5 at 1:25 AM)
+**Investigated**: Examined the existing HTML structure which contained: Hero section, Goal card with statistics grid, Rules card, Do/Don't two-column panels, and Final checklist section. Identified sections that duplicated information already covered in Rules.
 
-Access 356k tokens of past work via get_observations([IDs]) or mem-search skill.
+**Learned**: The original design used separate sections (Goal, Do/Don't, checklist) to reinforce guidance, but this created information redundancy. A three-card structure (Hero → Rules → Action) is sufficient to convey the mission, core guidance, and next steps without overwhelming users with repeated messaging.
+
+**Completed**: Restructured collection_guide.html to eliminate duplication: removed Goal section (100+, 50+50, 5-10 stat cards), removed Do/Don't panels, removed Final checklist. Condensed Rules from 5 items to 4 core rules with clearer language. Added simplified "When you are done" section with just the zip/upload instruction. Cleaned up unused CSS (--surface-soft, --primary, --success, --danger variables and .grid, .stat, .columns, .panel, .do, .dont, .checklist classes). File updated and verified.
+
+**Next Steps**: No further changes identified. The guide is ready for users. If in-app browser is refreshed, the simplified version will display immediately.
+
+
+Access 404k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

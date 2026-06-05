@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Collection Guide</title>
+  <style>
+    :root {
+      --bg: #f4f8ff;
+      --surface: #ffffff;
+      --text: #16233b;
+      --muted: #5f6f8e;
+      --primary-dark: #084ea9;
+      --warn: #e38a16;
+      --shadow: 0 18px 42px rgba(10, 62, 138, 0.12);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(102, 175, 255, 0.22), transparent 32%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      line-height: 1.55;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    .hero,
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 20px;
+      margin-bottom: 16px;
+    }
+
+    .hero {
+      background: linear-gradient(145deg, #0a65d9 0%, #4ea0ff 100%);
+      color: #ffffff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -60px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 30px;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .hero p {
+      color: rgba(255, 255, 255, 0.92);
+      max-width: 560px;
+    }
+
+    .list {
+      padding-left: 22px;
+      margin: 0;
+    }
+
+    .list li + li {
+      margin-top: 10px;
+    }
+
+    .callout {
+      border-left: 5px solid var(--warn);
+      background: #fff8eb;
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: #775113;
+      margin-top: 14px;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    @media (min-width: 640px) {
+      .page {
+        padding: 28px 22px 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Thank you for helping improve AI</div>
+      <h1>Collect clear, varied screenshots that teach models what real apps and websites look like.</h1>
+      <p>Your work helps improve dataset quality, coverage, and consistency. Fun, careful collecting makes a real difference. 🎉</p>
+    </section>
+
+    <section class="card">
+      <h2>📏 Rules</h2>
+      <ol class="list">
+        <li>Collect a strong batch for each category, with about 50 screenshots from mobile apps and 50 from websites in a browser.</li>
+        <li>Choose 5 to 10 apps or websites for each category.</li>
+        <li>Capture about 5 to 10 screenshots in each app or website.</li>
+        <li>Keep the set varied. Try different screen types instead of repeating the same page.</li>
+      </ol>
+      <div class="callout">
+        Tip: variety matters. Mix home pages, detail pages, search, listings, settings, carts, profiles, and other useful screen types when they fit the category.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>📦 When you are done</h2>
+      <p>Zip the collection and upload it to the local shared repository.</p>
+      <p class="footer-note">Thanks again for helping make AI quality better, one screenshot at a time. 📷✨</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -79,6 +79,7 @@
     <string name="usage_access_dialog_body">스크린샷 S가 저장 파일명에 현재 앱 이름을 추가하려면 Android 설정에서 Usage Access를 허용해야 합니다.</string>
     <string name="usage_access_continue_without_suffix">앱 이름 없이 계속</string>
     <string name="button_help">도움말!</string>
+    <string name="button_learn_more">자세히 보기</string>
     <string name="button_collection_help">도움말!</string>
     <string name="button_feedback">피드백을 환영합니다!</string>
     <string name="button_about">정보</string>
@@ -97,6 +98,8 @@
     <string name="setup_flow_content_description">설정 흐름 설명</string>
     <string name="setup_help_missing_art">설정 설명을 사용할 수 없습니다. res/drawable(-nodpi)에 setup_flow.png를 추가하세요.</string>
     <string name="collection_help_title">컬렉션 작동 방식</string>
+    <string name="collection_guide_title">수집 가이드</string>
+    <string name="collection_guide_unavailable">수집 가이드를 사용할 수 없습니다. app/src/main/assets에 collection_guide.html을 추가하세요.</string>
     <string name="collection_help_missing_art">컬렉션 설명을 사용할 수 없습니다. res/drawable(-nodpi)에 screenshot_collection_flow.png를 추가하세요.</string>
     <string name="collection_flow_content_description">컬렉션 흐름 설명</string>
     <string name="snapshot_browse_not_supported">이 기기에서는 스크린샷 찾아보기가 지원되지 않습니다.</string>

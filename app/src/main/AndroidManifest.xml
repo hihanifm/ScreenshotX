@@ -53,6 +53,10 @@
             android:name=".AboutActivity"
             android:exported="false"
             android:theme="@style/Theme.Screenshot3" />
+        <activity
+            android:name=".CollectionGuideActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Screenshot3" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

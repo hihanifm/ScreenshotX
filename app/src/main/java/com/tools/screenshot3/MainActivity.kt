@@ -196,6 +196,9 @@ class MainActivity : ComponentActivity() {
                         onSelectFolder = { ScreenCaptureManager.updateSubdirectory(it) },
                         onRequestCapture = { startCaptureFlow() },
                         onStopService = { stopCaptureService() },
+                        onOpenCollectionGuide = {
+                            startActivity(Intent(this, CollectionGuideActivity::class.java))
+                        },
                         onSaveCapture = { ScreenCaptureManager.captureAndStore(applicationContext) },
                         onBrowseSnapshots = { openSnapshotFolder() },
                         onOpenZipFolder = { openZipFolder() },
@@ -601,6 +604,7 @@ fun MainScreen(
     onSelectFolder: (String) -> Unit,
     onRequestCapture: () -> Unit,
     onStopService: () -> Unit,
+    onOpenCollectionGuide: () -> Unit,
     onSaveCapture: suspend () -> android.net.Uri?,
     onBrowseSnapshots: () -> Unit,
     onOpenZipFolder: () -> Unit,
@@ -936,12 +940,21 @@ fun MainScreen(
                                     )
                                 }
                             }
-                            TextButton(
-                                onClick = {
-                                    context.startActivity(Intent(context, AboutActivity::class.java))
-                                }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(text = stringResource(R.string.button_help))
+                                TextButton(onClick = onOpenCollectionGuide) {
+                                    Text(text = stringResource(R.string.button_learn_more))
+                                }
+                                TextButton(
+                                    onClick = {
+                                        context.startActivity(Intent(context, AboutActivity::class.java))
+                                    }
+                                ) {
+                                    Text(text = stringResource(R.string.button_help))
+                                }
                             }
                         }
                     }
@@ -1867,6 +1880,7 @@ fun MainScreenPreview() {
             onSelectFolder = {},
             onRequestCapture = {},
             onStopService = {},
+            onOpenCollectionGuide = {},
             onSaveCapture = { null },
             onBrowseSnapshots = {},
             onOpenZipFolder = {},
