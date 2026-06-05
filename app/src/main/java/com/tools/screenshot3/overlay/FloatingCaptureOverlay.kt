@@ -3,6 +3,7 @@ package com.tools.screenshot3.overlay
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.PixelFormat
 import android.os.Build
 import android.util.TypedValue
@@ -43,6 +44,9 @@ object FloatingCaptureOverlay {
             24f,
             metrics
         ).roundToInt()
+        val prefs = overlayPrefs(appContext)
+        val savedX = prefs.getInt(KEY_OVERLAY_X, NO_SAVED_POSITION)
+        val savedY = prefs.getInt(KEY_OVERLAY_Y, NO_SAVED_POSITION)
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -59,9 +63,15 @@ object FloatingCaptureOverlay {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = metrics.widthPixels - defaultMargin * 4
-            y = metrics.heightPixels / 3
+            x = if (savedX != NO_SAVED_POSITION) savedX else metrics.widthPixels - defaultMargin * 4
+            y = if (savedY != NO_SAVED_POSITION) savedY else metrics.heightPixels / 3
         }
+
+        clampPosition(
+            lp = params,
+            metrics = metrics,
+            defaultMargin = defaultMargin
+        )
 
         layoutParams = params
         overlayView = view
@@ -77,22 +87,6 @@ object FloatingCaptureOverlay {
             private var initialTouchY = 0f
             private var hasMoved = false
             private val touchSlop = appContext.resources.displayMetrics.density * 4
-
-            private fun clampPosition(lp: WindowManager.LayoutParams, dragView: View) {
-                val targetView = overlayView ?: dragView
-                val overlayWidth = targetView.width.takeIf { it > 0 }
-                    ?: dragView.width.takeIf { it > 0 }
-                    ?: captureButton.width
-                val overlayHeight = targetView.height.takeIf { it > 0 }
-                    ?: dragView.height.takeIf { it > 0 }
-                    ?: captureButton.height
-
-                val maxXPos = metrics.widthPixels - overlayWidth
-                val maxYPos = metrics.heightPixels - overlayHeight - defaultMargin
-
-                lp.x = min(max(lp.x, -defaultMargin), maxXPos)
-                lp.y = min(max(lp.y, defaultMargin / 2), maxYPos)
-            }
 
             override fun onTouch(v: View, event: MotionEvent): Boolean {
                 val lp = layoutParams ?: return false
@@ -115,7 +109,7 @@ object FloatingCaptureOverlay {
                         if (hasMoved) {
                             lp.x = (initialX + deltaX).toInt()
                             lp.y = (initialY + deltaY).toInt()
-                            clampPosition(lp, v)
+                            clampPosition(lp, metrics, defaultMargin, v, captureButton)
                             windowManager?.updateViewLayout(view, lp)
                         }
                         return true
@@ -125,8 +119,9 @@ object FloatingCaptureOverlay {
                         if (!hasMoved && elapsed < CLICK_MAX_DURATION_MS) {
                             captureButton.performClick()
                         } else if (hasMoved) {
-                            clampPosition(lp, v)
+                            clampPosition(lp, metrics, defaultMargin, v, captureButton)
                             windowManager?.updateViewLayout(view, lp)
+                            savePosition(prefs, lp.x, lp.y)
                             hasMoved = false
                         }
                         return true
@@ -233,4 +228,42 @@ object FloatingCaptureOverlay {
     }
 
     private const val CLICK_MAX_DURATION_MS = 200L
+    private const val PREF_NAME = "floating_capture_overlay"
+    private const val KEY_OVERLAY_X = "overlay_x"
+    private const val KEY_OVERLAY_Y = "overlay_y"
+    private const val NO_SAVED_POSITION = Int.MIN_VALUE
+
+    private fun clampPosition(
+        lp: WindowManager.LayoutParams,
+        metrics: android.util.DisplayMetrics,
+        defaultMargin: Int,
+        dragView: View? = null,
+        captureButton: View? = null
+    ) {
+        val targetView = overlayView ?: dragView
+        val overlayWidth = targetView?.width?.takeIf { it > 0 }
+            ?: dragView?.width?.takeIf { it > 0 }
+            ?: captureButton?.width?.takeIf { it > 0 }
+            ?: 0
+        val overlayHeight = targetView?.height?.takeIf { it > 0 }
+            ?: dragView?.height?.takeIf { it > 0 }
+            ?: captureButton?.height?.takeIf { it > 0 }
+            ?: 0
+
+        val maxXPos = max(-defaultMargin, metrics.widthPixels - overlayWidth)
+        val maxYPos = max(defaultMargin / 2, metrics.heightPixels - overlayHeight - defaultMargin)
+
+        lp.x = min(max(lp.x, -defaultMargin), maxXPos)
+        lp.y = min(max(lp.y, defaultMargin / 2), maxYPos)
+    }
+
+    private fun overlayPrefs(context: Context): SharedPreferences =
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+
+    private fun savePosition(prefs: SharedPreferences, x: Int, y: Int) {
+        prefs.edit()
+            .putInt(KEY_OVERLAY_X, x)
+            .putInt(KEY_OVERLAY_Y, y)
+            .apply()
+    }
 }

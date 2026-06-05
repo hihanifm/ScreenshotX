@@ -1,34 +1,15 @@
 <claude-mem-context>
 # Memory Context
 
-# [ScreenshotX] recent context, 2026-06-04 8:25pm EDT
+# [ScreenshotX] recent context, 2026-06-04 9:00pm EDT
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (15,680t read) | 160,008t work | 90% savings
+Stats: 50 obs (18,394t read) | 265,814t work | 93% savings
 
 ### Jun 4, 2026
-1507 7:40p 🔵 Android API 34+ MediaProjection dialog defaults to "A single app" mode
-1508 7:44p ✅ E2E test simplified—removed API 34+ MediaProjection dropdown workaround
-1509 " 🔵 Gradle wrapper file permission error blocks test compilation
-1510 " 🔵 E2E test compiles successfully after MediaProjection dialog workaround removal
-1511 " ✅ Simplified Media Projection Test to Remove Manual Dropdown Handling
-1512 7:46p 🟣 MediaProjection dialog now defaults to full-screen mode on Android 14+
-1513 " 🔵 Production and test code compile successfully after MediaProjection accessibility fix
-1514 7:50p ⚖️ User prefers visual accessibility guidance with animated focus indicators for overlay permission flow
-1515 7:58p 🔵 Overlay permission request implementation found
-1516 " 🔵 Existing dialog patterns and instructional image resources discovered
-1517 7:59p 🟣 Overlay permission guidance dialog scaffolding implemented
-1518 " 🔵 Dialog state management patterns identified in MainScreen composable
-1519 8:00p ✅ String resources added for overlay permission guidance dialog
-1520 " ✅ Korean localization added for overlay permission guidance strings
-1521 " ✅ Added Compose UI imports for overlay permission help dialog implementation
-1522 8:01p ✅ MainScreen composable parameters updated for overlay permission help dialog
-1523 " 🟣 Overlay permission help dialog rendering integrated into MainScreen
-1524 " 🟣 Overlay permission help dialog UI components implemented
-1525 " 🔴 Fixed vertical alignment in overlay permission mock rows
 1527 8:02p 🔵 Overlay permission help dialog compiles successfully
 1528 8:04p 🔵 Complete git diff verification of overlay permission help feature implementation
 1529 " 🔵 String resource references verified for overlay permission help dialog
@@ -42,34 +23,61 @@ Stats: 50 obs (15,680t read) | 160,008t work | 90% savings
 1537 " 🔵 Compilation error: wrapContentHeight is not a valid Compose modifier
 1538 8:06p 🔴 Added missing wrapContentHeight import, fixed crash compilation
 1539 " 🔵 Final implementation verified - crash-fixed overlay permission help dialog complete
-S523 Debug and fix OverlayPermissionHelpDialog crash; verify fixes compile successfully (Jun 4 at 8:06 PM)
 1540 8:07p ✅ Simplified mock Android Settings display to focus on key guidance
-S524 Complete and polish the overlay permission guidance feature, debugging runtime crash and simplifying visual design (Jun 4 at 8:07 PM)
 1541 " 🔵 Unused imports identified after scroll removal
 1542 " ✅ Removed unused scroll imports, verified clean build
-S525 Implement accessibility guidance for overlay permission and debug runtime crash, then finalize and commit the feature (Jun 4 at 8:07 PM)
 1543 8:09p 🔵 Git status shows three modified files from overlay permission feature implementation
 1544 " 🔵 Overlay permission guidance feature committed to version control
-S526 Explore app theming and color system, then decide on scope for updating colors to Samsung blue palette (Jun 4 at 8:10 PM)
 1545 8:10p 🔵 Exploration of app theming and color system architecture
 1546 8:11p ⚖️ Design scope decision: update app theme to Samsung blue color palette
-S527 Verify overlay permission dialog crash fix compiles successfully with Gradle (Jun 4 at 8:12 PM)
 1547 8:12p 🔵 Color palette definition file identified for theme update
 1548 " 🔵 Color palette scope analysis - purple theme colors referenced in two locations
 1549 " ✅ Updated color palette from purple to Samsung blue in Color.kt
 1550 " ✅ Updated Theme.kt to use Samsung blue colors with full Material Design 3 specification
 1551 8:13p ✅ Integrated hero card colors with Material Design 3 theme system
-S528 Verify overlay permission dialog crash fix compiles and resolves without errors (Jun 4 at 8:13 PM)
 1552 " 🔵 Compilation error: missing Color import in Theme.kt
 1553 " 🔴 Added missing Color import to Theme.kt
-S529 Explore app theming and implement Samsung blue color palette across the entire Material Design 3 theme system (Jun 4 at 8:13 PM)
 1554 " 🔵 Samsung blue theme update successfully compiles
-S530 Complete Samsung blue theme implementation and establish visual direction for a premium, first-class app appearance (Jun 4 at 8:13 PM)
 1555 8:14p 🔵 Samsung blue theme implementation verified and ready for commit
-S531 Implement accessibility guidance for overlay permissions and update app color theme to Samsung blue with Clean Samsung visual direction (Jun 4 at 8:15 PM)
 1557 8:16p 🔵 Comprehensive color usage audit reveals mixed hardcoded and theme-driven colors
-S532 Implement Samsung One UI-inspired visual direction with neutral surfaces and crisp blue accents to replace tinted/pastel appearance and achieve premium aesthetic (Jun 4 at 8:19 PM)
 1558 8:25p ✅ Samsung blue theme refinements committed
+1559 8:29p 🔵 Current Samsung Blue theme structure identified
+1560 " 🔵 Complete UI structure and styling patterns documented
+1561 8:34p ⚖️ Samsung One UI visual polish design plan established
+1562 8:36p ✅ Samsung One UI visual polish plan documented and saved
+1563 " 🟣 Premium color palette added to Color.kt
+1564 " 🟣 Samsung-style typography hierarchy implemented in Type.kt
+1565 8:37p 🟣 Material3 theme refined with new color scheme and shape system
+1566 " ✅ MainActivity.kt imports reorganized and expanded for UI polish implementation
+1567 " 🟣 Header card upgraded with blue gradient background and enhanced shadow
+1568 8:38p 🟣 Setup card comprehensively redesigned with blue-tinted shadows, pill buttons, gradient fills, and scale pulse animation
+1569 " 🟣 Collections info card styled with blue-tinted shadows and white surface
+S536 Final visual polish of ScreenshotX Android app—refine background color for improved visual hierarchy and prepare for device deployment (Jun 4 at 8:40 PM)
+S537 Complete visual modernization of ScreenshotX Android app from functional-basic to premium Samsung One UI aesthetic—design system implementation, UI component styling, animations, and final commit to version control (Jun 4 at 8:41 PM)
+S538 Floating overlay button refinement—reduce visual weight, eliminate color inconsistency, align with Samsung blue theme after main screen modernization (Jun 4 at 8:44 PM)
+S539 Floating overlay button visibility tuning—optimize balance between visual subtlety and usability through iterative opacity refinement (Jun 4 at 8:49 PM)
+S540 Complete Samsung One UI visual modernization—overlay button refinement and theme alignment (final phase of app polish) (Jun 4 at 8:51 PM)
+S541 Fix floating icon behavior that returns to the same position after being moved and snapshot taken (Jun 4 at 8:52 PM)
+S542 Fix floating icon that always returns to same spot after moving and capturing snapshot (Jun 4 at 8:52 PM)
+1595 8:55p 🔵 Floating button position management isolated to FloatingCaptureOverlay.kt
+1596 8:56p 🔵 Root cause: floating button position reset on every show() call—no persistence layer
+1597 " ⚖️ Choose persistent position storage across app restarts and service cycles
+1598 " 🔵 Overlay button background uses semi-transparent white stroke
+S543 Add visible white border circle to floating button for dark background visibility (Jun 4 at 8:56 PM)
+1599 " ⚖️ Simplified floating button visibility approach to white border ring
+1600 8:57p ✅ Floating button border ring enhanced for dark background visibility
+S544 Add visible white border ring to floating capture button for visibility on dark backgrounds (Jun 4 at 8:57 PM)
+1601 8:58p ✅ Floating button white border ring committed to main branch
+1602 " 🔴 Implement persistent float button position storage via SharedPreferences
+S545 Fix floating icon that always returns to same spot even after moving it and taking snapshot (Jun 4 at 8:59 PM)
+**Investigated**: FloatingCaptureOverlay.kt touch listener and position initialization logic; ScreenshotService capture flow showing hide/show cycle after snapshots; SharedPreferences patterns used by ScreenCaptureManager and CollectionRepository; codebase search for position-related variables and persistence mechanisms
 
-Access 160k tokens of past work via get_observations([IDs]) or mem-search skill.
+**Learned**: Root cause: FloatingCaptureOverlay.show() hardcodes initial position to (widthPixels - 96dp, heightPixels/3) on every call; position state only lives in-memory via instance variables and is destroyed when hide() is called; capture flow calls hide() then show(), resetting position to defaults each time; app already uses SharedPreferences for user preferences (ScreenCaptureManager, CollectionRepository) providing established pattern to follow
+
+**Completed**: Implemented SharedPreferences-based position persistence in FloatingCaptureOverlay.kt: (1) Added position retrieval in show() with NO_SAVED_POSITION sentinel to detect first-time display vs. restore; (2) Falls back to default coordinates if no saved position exists; (3) Refactored clampPosition() from nested touch listener function to top-level function supporting both initialization-time and drag-time bounds validation; (4) Added savePosition() call in MotionEvent.ACTION_UP to persist clamped x/y coordinates; (5) Added overlayPrefs() helper following app's SharedPreferences pattern; (6) Verified compilation: build successful with zero errors (two pre-existing warnings unrelated to this change)
+
+**Next Steps**: Test the fix on device/emulator to verify: (1) position persists across capture cycles (hide/show after snapshot); (2) position persists across preview accept/reject flows; (3) position persists across service restarts; (4) position persists across full app relaunches; (5) position clamping prevents off-screen placement on different screen sizes/orientations
+
+
+Access 266k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>
