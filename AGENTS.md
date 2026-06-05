@@ -7,10 +7,9 @@ Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery 
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (15,763t read) | 176,472t work | 91% savings
+Stats: 50 obs (15,680t read) | 160,008t work | 90% savings
 
 ### Jun 4, 2026
-1505 7:38p 🟣 Help button added to Setup card in MainActivity
 1507 7:40p 🔵 Android API 34+ MediaProjection dialog defaults to "A single app" mode
 1508 7:44p ✅ E2E test simplified—removed API 34+ MediaProjection dropdown workaround
 1509 " 🔵 Gradle wrapper file permission error blocks test compilation
@@ -70,27 +69,7 @@ S530 Complete Samsung blue theme implementation and establish visual direction f
 S531 Implement accessibility guidance for overlay permissions and update app color theme to Samsung blue with Clean Samsung visual direction (Jun 4 at 8:15 PM)
 1557 8:16p 🔵 Comprehensive color usage audit reveals mixed hardcoded and theme-driven colors
 S532 Implement Samsung One UI-inspired visual direction with neutral surfaces and crisp blue accents to replace tinted/pastel appearance and achieve premium aesthetic (Jun 4 at 8:19 PM)
-**Investigated**: - Current visual direction: app uses large tinted card surfaces (rose/pink tones in hero, light pastel containers throughout)
-    - Material Design 3 color system: 13-color Samsung blue palette already defined in Theme.kt
-    - Color distribution audit: identified hardcoded legacy colors (#2E7D32, #7E57C2, #FFE7B8, multiple placeholder blues/grays) mixed with theme-driven usage
-    - Samsung One UI design language: emphasis on neutral base surfaces, selective blue accents, restrained shadows, strong typography hierarchy
-    - User feedback on visual appeal: current design feels decorative/pastel rather than premium; tinted fills everywhere dilute the blue accent impact
+1558 8:25p ✅ Samsung blue theme refinements committed
 
-**Learned**: - Premium appearance requires visual restraint: removing decorative tinting allows intentional blue accents to carry more weight
-    - Material Design 3 system enables multi-tier color hierarchy without custom values: primary (blue), secondary (blue-grey), tertiary (blue accent) plus containers and surface variants
-    - Theme adoption path: hero card already uses primaryContainer; remaining work is migrating secondary cards and accent areas to surfaceVariant, outline, and surface tokens instead of hardcoded values
-    - Samsung One UI aesthetic: dark/bold typography on light/neutral backgrounds with blue reserved for interactive elements (buttons, toggles, selected states)
-    - Visual hierarchy strategy: stronger contrast in hero with darker title text + subtle blue accent edge, neutral secondary cards, prominent blue START button
-
-**Completed**: - Complete Samsung blue theme system definition (Color.kt, Theme.kt, 13-color Material Design 3 setup)
-    - Overlay permission accessibility dialog with mock Settings graphic
-    - Initial color audit identifying all hardcoded values requiring migration
-    - Theme integration on hero card (primaryContainer for background)
-    - English and Korean localizations for all new strings
-    - Build verification with no compilation errors
-
-**Next Steps**: Execute Samsung One UI visual pass: (1) Replace hero card rose/tinted background with white or near-white surface, add subtle blue accent line/edge treatment, darken title text for contrast; (2) Convert secondary card fills from hardcoded pastel colors to surfaceVariant or neutral surface tokens; (3) Migrate overlay permission mock graphic hardcoded blues (#E5F0FF, #4A78D6, #DCE9FF) and grays (#E6E6E6) to theme outline, secondary, or surface variants; (4) Verify button contrast and visual hierarchy across all states; (5) Test on phone-sized viewport in light mode; (6) Validate that permission dialogs maintain coherent visual language with updated direction.
-
-
-Access 176k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 160k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

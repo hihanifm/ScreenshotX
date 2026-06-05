@@ -17,9 +17,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,6 +40,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,6 +49,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,20 +60,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.animation.core.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.tools.screenshot3.ui.theme.SamsungBlueGradientEnd
+import com.tools.screenshot3.ui.theme.SamsungBlueGradientStart
+import com.tools.screenshot3.ui.theme.SamsungBlueMedium
+import com.tools.screenshot3.ui.theme.SamsungBlueSubtle
+import com.tools.screenshot3.ui.theme.SamsungGreen
+import com.tools.screenshot3.ui.theme.SamsungRedSoft
+import com.tools.screenshot3.ui.theme.SamsungRedText
+import com.tools.screenshot3.ui.theme.SamsungShadowBlue
+import com.tools.screenshot3.ui.theme.SamsungTextTertiary
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.tools.screenshot3.capture.ScreenCaptureManager
@@ -141,7 +157,7 @@ class MainActivity : ComponentActivity() {
         ScreenCaptureManager.initializeSettings(applicationContext)
         val isFirstLaunch = savedInstanceState == null
         setContent {
-            Screenshot3Theme(dynamicColor = false) {
+            Screenshot3Theme(darkTheme = false, dynamicColor = false) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     val captureActive by ScreenCaptureManager.isSessionActive.collectAsState()
                     val selectedFolder by ScreenCaptureManager.currentSubdirectory.collectAsState()
@@ -650,28 +666,32 @@ fun MainScreen(
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.primaryContainer,
+            color = Color.Transparent,
             shape = MaterialTheme.shapes.large,
-            tonalElevation = 4.dp,
-            shadowElevation = 6.dp
+            shadowElevation = 8.dp
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp, vertical = 18.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(SamsungBlueGradientStart, SamsungBlueGradientEnd)
+                        )
+                    )
+                    .padding(horizontal = 24.dp, vertical = 22.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = stringResource(R.string.screen_title),
                     style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = Color.White,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = stringResource(R.string.screen_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.82f),
+                    color = Color.White.copy(alpha = 0.85f),
                     textAlign = TextAlign.Center
                 )
             }
@@ -695,7 +715,7 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f, fill = true),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.Start,
             contentPadding = PaddingValues(bottom = 32.dp)
         ) {
@@ -711,53 +731,93 @@ fun MainScreen(
                     )
 
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = MaterialTheme.shapes.medium,
+                                spotColor = SamsungShadowBlue,
+                                ambientColor = SamsungShadowBlue
+                            ),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(20.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                // Jiggle animation for START button
-                                val infiniteTransition = rememberInfiniteTransition(label = "jiggle")
-                                val rotation by infiniteTransition.animateFloat(
-                                    initialValue = -3f,
-                                    targetValue = 3f,
+                                val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+                                val scale by infiniteTransition.animateFloat(
+                                    initialValue = 1f,
+                                    targetValue = 1.03f,
                                     animationSpec = infiniteRepeatable(
-                                        animation = tween(500, easing = FastOutSlowInEasing),
+                                        animation = tween(800, easing = FastOutSlowInEasing),
                                         repeatMode = RepeatMode.Reverse
                                     ),
-                                    label = "rotation"
+                                    label = "scale"
                                 )
-                                
+
                                 Button(
                                     onClick = onRequestCapture,
                                     enabled = !isCaptureReady,
                                     modifier = Modifier
                                         .weight(1f)
-                                        .rotate(if (!isCaptureReady) rotation else 0f)
+                                        .graphicsLayer(
+                                            scaleX = if (!isCaptureReady) scale else 1f,
+                                            scaleY = if (!isCaptureReady) scale else 1f
+                                        ),
+                                    shape = RoundedCornerShape(50),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color.Transparent,
+                                        disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                                    ),
+                                    contentPadding = PaddingValues(0.dp)
                                 ) {
-                                    Text(text = stringResource(R.string.button_start_capture))
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(
+                                                brush = Brush.horizontalGradient(
+                                                    colors = listOf(SamsungBlueGradientStart, SamsungBlueMedium)
+                                                ),
+                                                shape = RoundedCornerShape(50)
+                                            )
+                                            .padding(vertical = 12.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.button_start_capture),
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.labelLarge
+                                        )
+                                    }
                                 }
 
                                 Button(
                                     onClick = onStopService,
                                     enabled = isCaptureReady,
                                     modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                                        containerColor = SamsungRedSoft,
+                                        contentColor = SamsungRedText,
                                         disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                         disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 ) {
-                                    Text(text = stringResource(R.string.button_stop_capture))
+                                    Text(
+                                        text = stringResource(R.string.button_stop_capture),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
                                 }
                             }
 
@@ -768,7 +828,8 @@ fun MainScreen(
                                     stringResource(R.string.capture_not_ready)
                                 },
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = if (isCaptureReady) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurface
+                                fontWeight = FontWeight.Medium,
+                                color = if (isCaptureReady) SamsungGreen else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             statusMessage?.let { message ->
                                 Surface(
@@ -809,13 +870,24 @@ fun MainScreen(
                     )
 
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 6.dp,
+                                shape = MaterialTheme.shapes.medium,
+                                spotColor = SamsungShadowBlue,
+                                ambientColor = SamsungShadowBlue
+                            ),
+                        shape = MaterialTheme.shapes.medium,
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                     ) {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(16.dp),
+                                .padding(20.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Text(
@@ -856,6 +928,13 @@ fun MainScreen(
                     label = { Text(text = stringResource(R.string.hint_filter_assignee)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedContainerColor = Color.White
+                    ),
                     trailingIcon = {
                         if (assigneeFilter.value.isNotEmpty()) {
                             TextButton(onClick = { assigneeFilter.value = "" }) {
@@ -888,13 +967,24 @@ fun MainScreen(
 
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = MaterialTheme.shapes.medium,
+                            spotColor = SamsungShadowBlue,
+                            ambientColor = SamsungShadowBlue
+                        ),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         zipStatusMessage.value?.let { message ->
@@ -920,19 +1010,27 @@ fun MainScreen(
                                         showAddDialog.value = true
                                     },
                                     modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(50),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF7E57C2),
+                                        containerColor = MaterialTheme.colorScheme.secondary,
                                         contentColor = Color.White
                                     )
                                 ) {
-                                    Text(text = stringResource(R.string.button_add_collection))
+                                    Text(
+                                        text = stringResource(R.string.button_add_collection),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
                                 }
 
                                 Button(
                                     onClick = onBrowseSnapshots,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(50)
                                 ) {
-                                    Text(text = stringResource(R.string.button_browse_snapshots))
+                                    Text(
+                                        text = stringResource(R.string.button_browse_snapshots),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
                                 }
                             }
 
@@ -946,25 +1044,37 @@ fun MainScreen(
                                         showZipDialog.value = true
                                     },
                                     enabled = !isZipping.value,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(50)
                                 ) {
-                                    Text(text = stringResource(R.string.button_zip_collections))
+                                    Text(
+                                        text = stringResource(R.string.button_zip_collections),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
                                 }
 
                                 Button(
                                     onClick = onOpenZipFolder,
                                     enabled = !isZipping.value,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(50)
                                 ) {
-                                    Text(text = stringResource(R.string.button_open_zip_folder))
+                                    Text(
+                                        text = stringResource(R.string.button_open_zip_folder),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
                                 }
                             }
 
                             Button(
                                 onClick = onOpenMyFiles,
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(50)
                             ) {
-                                Text(text = stringResource(R.string.button_open_myfiles))
+                                Text(
+                                    text = stringResource(R.string.button_open_myfiles),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
                             }
                         }
                     }
@@ -973,20 +1083,35 @@ fun MainScreen(
 
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = MaterialTheme.shapes.medium,
+                            spotColor = SamsungShadowBlue,
+                            ambientColor = SamsungShadowBlue
+                        ),
+                    shape = MaterialTheme.shapes.medium,
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Button(
                             onClick = { showAboutDialog.value = true },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(50)
                         ) {
-                            Text(text = stringResource(R.string.button_about))
+                            Text(
+                                text = stringResource(R.string.button_about),
+                                style = MaterialTheme.typography.labelLarge
+                            )
                         }
                     }
                 }
@@ -1460,32 +1585,52 @@ private fun CollectionItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val containerColor by animateColorAsState(
+        targetValue = if (isSelected) SamsungBlueSubtle else MaterialTheme.colorScheme.surface,
+        animationSpec = tween(200),
+        label = "itemBg"
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
+        animationSpec = tween(200),
+        label = "itemBorder"
+    )
+
     Card(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = if (isSelected) {
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = if (isSelected) 4.dp else 2.dp,
+                shape = MaterialTheme.shapes.medium,
+                spotColor = if (isSelected) SamsungShadowBlue else Color(0x0D000000),
+                ambientColor = if (isSelected) SamsungShadowBlue else Color(0x0D000000)
             )
-        } else {
-            CardDefaults.cardColors()
-        }
+            .border(
+                width = if (isSelected) 1.5.dp else 0.dp,
+                color = borderColor,
+                shape = MaterialTheme.shapes.medium
+            ),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)) {
             Text(
                 text = if (isSelected) {
                     stringResource(R.string.selected_folder_format, label)
                 } else {
                     label
                 },
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
             )
             if (assignee.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = assignee,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = SamsungTextTertiary
                 )
             }
         }

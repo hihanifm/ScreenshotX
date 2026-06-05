@@ -1,9 +1,10 @@
 package com.tools.screenshot3.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -11,6 +12,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 private val DarkColorScheme = darkColorScheme(
     primary = SamsungBlue80,
@@ -21,29 +23,39 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = SamsungBlue40,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFD6E7FF),
-    onPrimaryContainer = Color(0xFF003262),
-    secondary = SamsungBlueGrey40,
+    primaryContainer = SamsungBlueSubtle,
+    onPrimaryContainer = Color(0xFF002D6B),
+    secondary = SamsungBlueMedium,
     onSecondary = Color.White,
-    secondaryContainer = Color(0xFFDCE4F4),
-    onSecondaryContainer = Color(0xFF182433),
+    secondaryContainer = Color(0xFFE3EDFA),
+    onSecondaryContainer = Color(0xFF1A3A5C),
     tertiary = SamsungBlueAccent40,
     onTertiary = Color.White,
     tertiaryContainer = Color(0xFFD9E7FF),
     onTertiaryContainer = Color(0xFF0B2F66),
-    background = Color(0xFFF8FAFF),
-    onBackground = Color(0xFF191C20),
-    surface = Color(0xFFF8FAFF),
-    onSurface = Color(0xFF191C20),
-    surfaceVariant = Color(0xFFDCE4F4),
-    onSurfaceVariant = Color(0xFF445062),
-    outline = Color(0xFF6C7482)
+    background = SamsungSurfaceBase,
+    onBackground = SamsungTextPrimary,
+    surface = SamsungSurfaceCard,
+    onSurface = SamsungTextPrimary,
+    surfaceVariant = SamsungSurfaceElevated,
+    onSurfaceVariant = SamsungTextSecondary,
+    outline = Color(0xFFD1D9E6),
+    outlineVariant = Color(0xFFE8EDF5),
+    errorContainer = SamsungRedSoft,
+    onErrorContainer = SamsungRedText
+)
+
+private val AppShapes = Shapes(
+    extraSmall = RoundedCornerShape(8.dp),
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(24.dp),
+    extraLarge = RoundedCornerShape(28.dp)
 )
 
 @Composable
 fun Screenshot3Theme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
@@ -60,6 +72,7 @@ fun Screenshot3Theme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = AppShapes,
         content = content
     )
 }
