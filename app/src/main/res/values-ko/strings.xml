@@ -8,6 +8,15 @@
     <string name="permission_denied">화면 캡처 권한이 거부되었습니다</string>
     <string name="notification_permission_denied">캡처를 시작하려면 알림 권한이 필요합니다</string>
     <string name="overlay_permission_denied">플로팅 캡처 버튼을 표시하려면 오버레이 권한이 필요합니다</string>
+    <string name="overlay_permission_help_title">오버레이 권한을 허용하세요</string>
+    <string name="overlay_permission_help_body">다음 화면에서 %1$s를 탭한 다음 다른 앱 위에 표시를 켜세요.</string>
+    <string name="overlay_permission_help_open_settings">설정 열기</string>
+    <string name="overlay_permission_help_close">나중에</string>
+    <string name="overlay_permission_help_graphic_content_description">스크린샷 S 행이 강조된 Android 오버레이 권한 목록 그림입니다.</string>
+    <string name="overlay_permission_mock_heading">다른 앱 위에 표시</string>
+    <string name="overlay_permission_mock_callout">이 항목을 탭하세요: %1$s</string>
+    <string name="overlay_permission_mock_allowed">허용됨</string>
+    <string name="overlay_permission_mock_not_allowed">허용 안 함</string>
     <string name="storage_permission_denied">컬렉션에 액세스하려면 저장소 권한이 필요합니다</string>
     <string name="screen_title">스크린샷 관리자</string>
     <string name="screen_subtitle">기기 스크린샷을 쉽게 캡처하고 정리하세요</string>
@@ -83,4 +92,3 @@
     <string name="error_collection_duplicate">컬렉션이 이미 존재합니다.</string>
     <string name="error_zip_username_empty">사용자 이름을 입력하세요.</string>
 </resources>
-

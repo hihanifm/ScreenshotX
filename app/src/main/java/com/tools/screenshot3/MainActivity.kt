@@ -19,6 +19,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,10 +32,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -81,6 +83,7 @@ import java.util.Locale
 private const val OVERLAY_PERMISSION_PACKAGE_PREFIX = "package"
 
 class MainActivity : ComponentActivity() {
+    private val showOverlayPermissionHelp = mutableStateOf(false)
 
     private val mediaProjectionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -157,7 +160,13 @@ class MainActivity : ComponentActivity() {
                         onRequiresConfirmationChanged = {
                             ScreenCaptureManager.updateRequiresConfirmation(applicationContext, it)
                         },
-                        isFirstLaunch = isFirstLaunch
+                        isFirstLaunch = isFirstLaunch,
+                        showOverlayPermissionHelp = showOverlayPermissionHelp.value,
+                        onDismissOverlayPermissionHelp = { showOverlayPermissionHelp.value = false },
+                        onOpenOverlayPermissionSettings = {
+                            showOverlayPermissionHelp.value = false
+                            requestOverlayPermission()
+                        }
                     )
                 }
             }
@@ -166,7 +175,7 @@ class MainActivity : ComponentActivity() {
 
     private fun startCaptureFlow() {
         if (!canDrawOverlays()) {
-            requestOverlayPermission()
+            showOverlayPermissionHelp.value = true
             return
         }
         ensurePermissionsAndRequestCapture()
@@ -526,6 +535,9 @@ fun MainScreen(
     requiresConfirmation: Boolean,
     onRequiresConfirmationChanged: (Boolean) -> Unit,
     isFirstLaunch: Boolean = false,
+    showOverlayPermissionHelp: Boolean = false,
+    onDismissOverlayPermissionHelp: () -> Unit = {},
+    onOpenOverlayPermissionSettings: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues()
 ) {
     val scope = rememberCoroutineScope()
@@ -1242,6 +1254,203 @@ fun MainScreen(
         )
     }
 
+    if (showOverlayPermissionHelp && !isPreview) {
+        OverlayPermissionHelpDialog(
+            appName = stringResource(R.string.app_name),
+            onDismiss = onDismissOverlayPermissionHelp,
+            onOpenSettings = onOpenOverlayPermissionSettings
+        )
+    }
+
+}
+
+@Composable
+private fun OverlayPermissionHelpDialog(
+    appName: String,
+    onDismiss: () -> Unit,
+    onOpenSettings: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = 6.dp,
+            shadowElevation = 12.dp,
+            modifier = Modifier
+                .fillMaxWidth(0.94f)
+                .wrapContentHeight()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.overlay_permission_help_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = stringResource(R.string.overlay_permission_help_body, appName),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                OverlayPermissionMockGraphic(
+                    appName = appName,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 280.dp, max = 360.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    TextButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = stringResource(R.string.overlay_permission_help_close))
+                    }
+                    Button(
+                        onClick = onOpenSettings,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = stringResource(R.string.overlay_permission_help_open_settings))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun OverlayPermissionMockGraphic(
+    appName: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.large,
+        color = Color(0xFFF5F1FA),
+        tonalElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.overlay_permission_mock_heading),
+                style = MaterialTheme.typography.headlineSmall
+            )
+
+            Surface(
+                shape = MaterialTheme.shapes.medium,
+                color = Color(0xFFE5F0FF),
+                tonalElevation = 4.dp,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(2.dp, Color(0xFF4A78D6), MaterialTheme.shapes.medium)
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Surface(
+                        shape = MaterialTheme.shapes.small,
+                        color = Color(0xFFFFE7B8),
+                        modifier = Modifier.align(Alignment.Start)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.overlay_permission_mock_callout, appName),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                    OverlayPermissionMockRow(
+                        label = appName,
+                        status = stringResource(R.string.overlay_permission_mock_not_allowed),
+                        iconText = appName.firstOrNull()?.uppercaseChar()?.toString() ?: "S",
+                        highlighted = true
+                    )
+                }
+            }
+
+            OverlayPermissionMockRow(
+                label = "Android Auto",
+                status = stringResource(R.string.overlay_permission_mock_not_allowed),
+                iconText = "A"
+            )
+            OverlayPermissionMockRow(
+                label = "Google",
+                status = stringResource(R.string.overlay_permission_mock_allowed),
+                iconText = "G"
+            )
+            OverlayPermissionMockRow(
+                label = "Google Play services",
+                status = stringResource(R.string.overlay_permission_mock_not_allowed),
+                iconText = "P"
+            )
+            OverlayPermissionMockRow(
+                label = "Phone",
+                status = stringResource(R.string.overlay_permission_mock_allowed),
+                iconText = "P"
+            )
+            OverlayPermissionMockRow(
+                label = "Photos",
+                status = stringResource(R.string.overlay_permission_mock_not_allowed),
+                iconText = "P"
+            )
+        }
+    }
+}
+
+@Composable
+private fun OverlayPermissionMockRow(
+    label: String,
+    status: String,
+    iconText: String? = null,
+    highlighted: Boolean = false
+) {
+    val rowColor = if (highlighted) Color(0xFFEAF2FF) else Color.Transparent
+    val borderColor = if (highlighted) Color(0xFF4A78D6) else Color.Transparent
+    Surface(
+        shape = MaterialTheme.shapes.medium,
+        color = rowColor,
+        tonalElevation = if (highlighted) 3.dp else 0.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(2.dp, borderColor, MaterialTheme.shapes.medium)
+    ) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = if (highlighted) Color(0xFFDCE9FF) else Color(0xFFE6E6E6),
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = iconText.orEmpty(),
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                }
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = status,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
 }
 
 @Composable

@@ -8,6 +8,15 @@
     <string name="permission_denied">Screen capture permission denied</string>
     <string name="notification_permission_denied">Notification permission is required to start capture</string>
     <string name="overlay_permission_denied">Overlay permission is required to show the floating capture button</string>
+    <string name="overlay_permission_help_title">Allow overlay access</string>
+    <string name="overlay_permission_help_body">On the next screen, tap %1$s, then turn on Allow display over other apps.</string>
+    <string name="overlay_permission_help_open_settings">Open Settings</string>
+    <string name="overlay_permission_help_close">Not now</string>
+    <string name="overlay_permission_help_graphic_content_description">Illustration of the Android overlay permission list with the Screenshot S row highlighted.</string>
+    <string name="overlay_permission_mock_heading">Display over other apps</string>
+    <string name="overlay_permission_mock_callout">Tap %1$s</string>
+    <string name="overlay_permission_mock_allowed">Allowed</string>
+    <string name="overlay_permission_mock_not_allowed">Not allowed</string>
     <string name="storage_permission_denied">Storage permission is required to access collections</string>
     <string name="screen_title">Screenshot Manager</string>
     <string name="screen_subtitle">Capture and organize device screenshots effortlessly</string>
