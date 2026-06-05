@@ -160,7 +160,7 @@ class ScreenshotService : android.app.Service() {
                 if (requiresConfirmation) {
                     val captured = try {
                         delay(CAPTURE_STABILIZE_DELAY_MS)
-                        ScreenCaptureManager.captureForPreview()
+                        ScreenCaptureManager.captureForPreview(applicationContext)
                     } finally {
                         delay(OVERLAY_RESUME_DELAY_MS)
                     }

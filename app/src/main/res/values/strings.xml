@@ -66,6 +66,12 @@
     <string name="capture_preview_content_description">Screenshot preview</string>
     <string name="setting_require_confirmation_title">Ask before saving</string>
     <string name="setting_require_confirmation_subtitle">Show the captured image and choose whether to keep it.</string>
+    <string name="usage_access_title">Enable app-name filenames</string>
+    <string name="usage_access_body">Allow Usage Access so saved screenshots can include the foreground app name, like Amazon or Chrome.</string>
+    <string name="usage_access_open_settings">Enable Usage Access</string>
+    <string name="usage_access_dialog_title">Allow app-name filenames?</string>
+    <string name="usage_access_dialog_body">Android requires Usage Access in Settings before Screenshot S can add the current app name to saved screenshot filenames.</string>
+    <string name="usage_access_continue_without_suffix">Continue without app name</string>
     <string name="button_help">Help!</string>
     <string name="button_collection_help">Help!</string>
     <string name="button_feedback">Feedbacks are welcome!</string>

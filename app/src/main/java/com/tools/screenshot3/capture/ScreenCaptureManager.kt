@@ -150,7 +150,7 @@ private val _requiresConfirmation = MutableStateFlow(false)
         imageReader = null
     }
 
-    suspend fun captureForPreview(subDirectory: String? = null): Boolean =
+    suspend fun captureForPreview(context: Context, subDirectory: String? = null): Boolean =
         withContext(Dispatchers.IO) {
             if (!_isSessionActive.value) return@withContext false
             synchronized(this@ScreenCaptureManager) {
@@ -162,10 +162,11 @@ private val _requiresConfirmation = MutableStateFlow(false)
             val reader = imageReader ?: return@withContext false
             val image = reader.acquireLatestImage() ?: return@withContext false
             val targetDirectory = sanitizeSubdirectory(subDirectory ?: _currentSubdirectory.value)
+            val appSuffix = ForegroundAppResolver.resolveForegroundAppSuffix(context.applicationContext)
             Log.d(TAG, "SSM-preview-capture-start targetDir=$targetDirectory")
             val success = try {
                 val bitmap = image.toBitmap(captureWidth, captureHeight)
-                setPendingCapture(bitmap, targetDirectory)
+                setPendingCapture(bitmap, targetDirectory, appSuffix)
                 Log.d(TAG, "SSM-preview-capture-success targetDir=$targetDirectory")
                 true
             } catch (t: Throwable) {
@@ -184,21 +185,22 @@ private val _requiresConfirmation = MutableStateFlow(false)
             val reader = imageReader ?: return@withContext null
             val image = reader.acquireLatestImage() ?: return@withContext null
             val targetDirectory = sanitizeSubdirectory(subDirectory ?: _currentSubdirectory.value)
-        Log.d(TAG, "SSM-capture-start targetDir=$targetDirectory")
+            val appSuffix = ForegroundAppResolver.resolveForegroundAppSuffix(context.applicationContext)
+            Log.d(TAG, "SSM-capture-start targetDir=$targetDirectory")
 
             val savedUri = try {
                 val bitmap = image.toBitmap(captureWidth, captureHeight)
-                saveBitmap(context, bitmap, targetDirectory)
+                saveBitmap(context, bitmap, targetDirectory, appSuffix)
             } finally {
                 image.close()
-            Log.d(TAG, "SSM-capture-imageClosed")
+                Log.d(TAG, "SSM-capture-imageClosed")
             }
 
             if (savedUri != null) {
                 _captureEvents.value = System.currentTimeMillis()
-            Log.d(TAG, "SSM-capture-success uri=$savedUri")
-        } else {
-            Log.e(TAG, "SSM-capture-failed targetDir=$targetDirectory")
+                Log.d(TAG, "SSM-capture-success uri=$savedUri")
+            } else {
+                Log.e(TAG, "SSM-capture-failed targetDir=$targetDirectory")
             }
 
             savedUri
@@ -211,7 +213,7 @@ private val _requiresConfirmation = MutableStateFlow(false)
         }
         Log.d(TAG, "SSM-persist-start targetDir=${capture.subDirectory}")
         val uri = withContext(Dispatchers.IO) {
-            saveBitmap(context, capture.bitmap, capture.subDirectory)
+            saveBitmap(context, capture.bitmap, capture.subDirectory, capture.appSuffix)
         }
         if (uri != null) {
             _captureEvents.value = System.currentTimeMillis()
@@ -280,11 +282,16 @@ private val _requiresConfirmation = MutableStateFlow(false)
         return Bitmap.createBitmap(bitmap, 0, 0, width, height)
     }
 
-    private fun saveBitmap(context: Context, bitmap: Bitmap, subDirectory: String): Uri? {
+    private fun saveBitmap(
+        context: Context,
+        bitmap: Bitmap,
+        subDirectory: String,
+        appSuffix: String?
+    ): Uri? {
         val collection = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
         val resolver = context.contentResolver
-        val name = generateFilename()
+        val name = ScreenshotFilenameFormatter.buildScreenshotFilename(appSuffix = appSuffix)
         val values = ContentValues().apply {
             put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, name)
             put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/png")
@@ -398,7 +405,7 @@ private val _requiresConfirmation = MutableStateFlow(false)
         onProgress: suspend (current: Int, total: Int, label: String) -> Unit = { _, _, _ -> }
     ): List<CollectionZipResult> = withContext(Dispatchers.IO) {
         val results = mutableListOf<CollectionZipResult>()
-        val normalizedUser = sanitizeFileSegment(username).ifEmpty { "user" }
+        val normalizedUser = ScreenshotFilenameFormatter.sanitizeFileSegment(username).ifEmpty { "user" }
         Log.d(TAG, "SSM-zip-start totalCollections=${collections.size} user=$normalizedUser")
 
         collections.forEachIndexed { index, (key, label) ->
@@ -521,9 +528,6 @@ private val _requiresConfirmation = MutableStateFlow(false)
         return cleaned.ifEmpty { DEFAULT_SUBDIRECTORY }
     }
 
-    private fun generateFilename(): String =
-        "Screenshot_${System.currentTimeMillis()}.png"
-
     private fun ensureLegacyDirectoryExists(subDirectory: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) return
         val directory = java.io.File(
@@ -538,15 +542,16 @@ private val _requiresConfirmation = MutableStateFlow(false)
 
     fun normalizeDirectoryName(input: String): String = sanitizeSubdirectory(input)
 
-    private fun setPendingCapture(bitmap: Bitmap, subDirectory: String) {
+    private fun setPendingCapture(bitmap: Bitmap, subDirectory: String, appSuffix: String?) {
         synchronized(this) {
-            pendingCapture = PendingCaptureSnapshot(bitmap, subDirectory)
+            pendingCapture = PendingCaptureSnapshot(bitmap, subDirectory, appSuffix)
         }
     }
 
-    data class PendingCaptureSnapshot internal constructor(
+    class PendingCaptureSnapshot internal constructor(
         val bitmap: Bitmap,
-        val subDirectory: String
+        val subDirectory: String,
+        val appSuffix: String?
     )
 
     private data class MediaItem(
@@ -711,15 +716,9 @@ private val _requiresConfirmation = MutableStateFlow(false)
         return items
     }
 
-    private fun sanitizeFileSegment(input: String): String =
-        input.trim()
-            .lowercase(Locale.getDefault())
-            .replace(Regex("[^a-z0-9_-]+"), "_")
-            .trim('_')
-
     private fun buildZipFileName(username: String, label: String, count: Int): String {
-        val userSegment = sanitizeFileSegment(username).ifEmpty { "user" }
-        val labelSegment = sanitizeFileSegment(label).ifEmpty { "collection" }
+        val userSegment = ScreenshotFilenameFormatter.sanitizeFileSegment(username).ifEmpty { "user" }
+        val labelSegment = ScreenshotFilenameFormatter.sanitizeFileSegment(label).ifEmpty { "collection" }
         return "${userSegment}_${labelSegment}_${count}.zip"
     }
 
@@ -729,5 +728,3 @@ private val _requiresConfirmation = MutableStateFlow(false)
     private const val ZIP_LEGACY_FOLDER = "ScreenshotCollections"
     private const val TAG = "ScreenCaptureManager"
 }
-
-

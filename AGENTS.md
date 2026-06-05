@@ -1,28 +1,16 @@
 <claude-mem-context>
 # Memory Context
 
-# [ScreenshotX] recent context, 2026-06-04 9:00pm EDT
+# [ScreenshotX] recent context, 2026-06-04 9:15pm EDT
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (18,394t read) | 265,814t work | 93% savings
+Stats: 50 obs (20,843t read) | 355,815t work | 94% savings
 
 ### Jun 4, 2026
-1527 8:02p 🔵 Overlay permission help dialog compiles successfully
-1528 8:04p 🔵 Complete git diff verification of overlay permission help feature implementation
-1529 " 🔵 String resource references verified for overlay permission help dialog
-1530 " 🔵 Runtime crash identified: null context in painterResource for app icon
-1531 " 🔵 Crash log analysis confirms painterResource context issue in dialog composition
-1532 8:05p 🔵 Crash log truncated - root cause exception not provided in stack trace
-1533 " 🔴 Fixed crash by removing painterResource call and simplifying dialog layout
-1534 " 🔴 Refined dialog layout constraints to support wrap-content sizing
-1535 " 🔴 Fixed app crash in OverlayPermissionHelpDialog by simplifying layout constraints
-1536 " 🔵 Original crash root cause confirmed: painterResource rejects mipmap drawable type
-1537 " 🔵 Compilation error: wrapContentHeight is not a valid Compose modifier
-1538 8:06p 🔴 Added missing wrapContentHeight import, fixed crash compilation
-1539 " 🔵 Final implementation verified - crash-fixed overlay permission help dialog complete
+1539 8:06p 🔵 Final implementation verified - crash-fixed overlay permission help dialog complete
 1540 8:07p ✅ Simplified mock Android Settings display to focus on key guidance
 1541 " 🔵 Unused imports identified after scroll removal
 1542 " ✅ Removed unused scroll imports, verified clean build
@@ -52,9 +40,6 @@ Stats: 50 obs (18,394t read) | 265,814t work | 93% savings
 1567 " 🟣 Header card upgraded with blue gradient background and enhanced shadow
 1568 8:38p 🟣 Setup card comprehensively redesigned with blue-tinted shadows, pill buttons, gradient fills, and scale pulse animation
 1569 " 🟣 Collections info card styled with blue-tinted shadows and white surface
-S536 Final visual polish of ScreenshotX Android app—refine background color for improved visual hierarchy and prepare for device deployment (Jun 4 at 8:40 PM)
-S537 Complete visual modernization of ScreenshotX Android app from functional-basic to premium Samsung One UI aesthetic—design system implementation, UI component styling, animations, and final commit to version control (Jun 4 at 8:41 PM)
-S538 Floating overlay button refinement—reduce visual weight, eliminate color inconsistency, align with Samsung blue theme after main screen modernization (Jun 4 at 8:44 PM)
 S539 Floating overlay button visibility tuning—optimize balance between visual subtlety and usability through iterative opacity refinement (Jun 4 at 8:49 PM)
 S540 Complete Samsung One UI visual modernization—overlay button refinement and theme alignment (final phase of app polish) (Jun 4 at 8:51 PM)
 S541 Fix floating icon behavior that returns to the same position after being moved and snapshot taken (Jun 4 at 8:52 PM)
@@ -68,16 +53,23 @@ S543 Add visible white border circle to floating button for dark background visi
 1600 8:57p ✅ Floating button border ring enhanced for dark background visibility
 S544 Add visible white border ring to floating capture button for visibility on dark backgrounds (Jun 4 at 8:57 PM)
 1601 8:58p ✅ Floating button white border ring committed to main branch
+S545 Fix floating icon that always returns to same spot even after moving it and taking snapshot (Jun 4 at 8:58 PM)
 1602 " 🔴 Implement persistent float button position storage via SharedPreferences
-S545 Fix floating icon that always returns to same spot even after moving it and taking snapshot (Jun 4 at 8:59 PM)
-**Investigated**: FloatingCaptureOverlay.kt touch listener and position initialization logic; ScreenshotService capture flow showing hide/show cycle after snapshots; SharedPreferences patterns used by ScreenCaptureManager and CollectionRepository; codebase search for position-related variables and persistence mechanisms
+S546 Fix floating icon that always returns to same spot after moving and taking snapshot—implement persistent position storage (Jun 4 at 8:59 PM)
+S547 Add app name suffix to screenshot filenames when capturing from a specific app (e.g., Amazon). Determine technical feasibility and design approach. (Jun 4 at 9:00 PM)
+1605 9:01p 🔵 Screenshot filename generation uses timestamp only; foreground app detection requires additional permissions
+1606 " ⚖️ Adopt Android Usage Access permission for foreground app name detection in screenshot filenames
+1607 9:02p ⚖️ Standardized screenshot filename format with graceful fallback on app name resolution failure
+1608 9:04p 🔴 Floating overlay position now persists across captures and app restarts
+S548 Fix floating capture icon position resetting to default after snapshot — implement persistent position storage across captures, service restarts, and app relaunches. (Jun 4 at 9:04 PM)
+1609 " 🔵 Existing file segment sanitization pattern can be reused for app name in screenshot filenames
+1610 9:06p 🟣 Implemented foreground app name suffix for screenshot filenames using UsageStatsManager
+1611 " 🔵 Implementation patch application failed; new files not created; changes not applied to existing files
+1612 9:07p 🟣 Core utility files created for app-name screenshot filename feature
+1613 " 🟣 Three core utility files successfully created via patch application
+1614 " 🟣 ScreenCaptureManager integrated with foreground app detection and new filename formatter
+1615 " 🟣 ScreenshotService updated to pass context to captureForPreview method
+1616 " 🟣 MainActivity enhanced with Usage Access permission state management and UI banner
 
-**Learned**: Root cause: FloatingCaptureOverlay.show() hardcodes initial position to (widthPixels - 96dp, heightPixels/3) on every call; position state only lives in-memory via instance variables and is destroyed when hide() is called; capture flow calls hide() then show(), resetting position to defaults each time; app already uses SharedPreferences for user preferences (ScreenCaptureManager, CollectionRepository) providing established pattern to follow
-
-**Completed**: Implemented SharedPreferences-based position persistence in FloatingCaptureOverlay.kt: (1) Added position retrieval in show() with NO_SAVED_POSITION sentinel to detect first-time display vs. restore; (2) Falls back to default coordinates if no saved position exists; (3) Refactored clampPosition() from nested touch listener function to top-level function supporting both initialization-time and drag-time bounds validation; (4) Added savePosition() call in MotionEvent.ACTION_UP to persist clamped x/y coordinates; (5) Added overlayPrefs() helper following app's SharedPreferences pattern; (6) Verified compilation: build successful with zero errors (two pre-existing warnings unrelated to this change)
-
-**Next Steps**: Test the fix on device/emulator to verify: (1) position persists across capture cycles (hide/show after snapshot); (2) position persists across preview accept/reject flows; (3) position persists across service restarts; (4) position persists across full app relaunches; (5) position clamping prevents off-screen placement on different screen sizes/orientations
-
-
-Access 266k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 356k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

@@ -87,6 +87,7 @@ import com.tools.screenshot3.ui.theme.SamsungShadowBlue
 import com.tools.screenshot3.ui.theme.SamsungTextTertiary
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import com.tools.screenshot3.capture.ForegroundAppResolver
 import com.tools.screenshot3.capture.ScreenCaptureManager
 import com.tools.screenshot3.data.CollectionRepository
 import com.tools.screenshot3.ui.theme.Screenshot3Theme
@@ -100,6 +101,9 @@ private const val OVERLAY_PERMISSION_PACKAGE_PREFIX = "package"
 
 class MainActivity : ComponentActivity() {
     private val showOverlayPermissionHelp = mutableStateOf(false)
+    private val showUsageAccessHelp = mutableStateOf(false)
+    private val hasUsageAccess = mutableStateOf(false)
+    private val pendingCaptureAfterUsageAccess = mutableStateOf(false)
 
     private val mediaProjectionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -143,18 +147,29 @@ class MainActivity : ComponentActivity() {
     private val browseSnapshotsLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
 
+    private val usageAccessSettingsLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            refreshUsageAccessState()
+            if (hasUsageAccess.value && pendingCaptureAfterUsageAccess.value) {
+                pendingCaptureAfterUsageAccess.value = false
+                ensurePermissionsAndRequestCapture()
+            }
+        }
+
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(LocaleHelper.updateLocale(newBase, LocaleHelper.getSavedLanguage(newBase)))
     }
 
     override fun onResume() {
         super.onResume()
+        refreshUsageAccessState()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         ScreenCaptureManager.initializeSettings(applicationContext)
+        refreshUsageAccessState()
         val isFirstLaunch = savedInstanceState == null
         setContent {
             Screenshot3Theme(darkTheme = false, dynamicColor = false) {
@@ -176,6 +191,23 @@ class MainActivity : ComponentActivity() {
                         onRequiresConfirmationChanged = {
                             ScreenCaptureManager.updateRequiresConfirmation(applicationContext, it)
                         },
+                        hasUsageAccess = hasUsageAccess.value,
+                        onOpenUsageAccessSettings = { requestUsageAccessPermission() },
+                        showUsageAccessHelp = showUsageAccessHelp.value,
+                        onDismissUsageAccessHelp = {
+                            showUsageAccessHelp.value = false
+                            pendingCaptureAfterUsageAccess.value = false
+                        },
+                        onContinueWithoutUsageAccess = {
+                            showUsageAccessHelp.value = false
+                            pendingCaptureAfterUsageAccess.value = false
+                            ensurePermissionsAndRequestCapture()
+                        },
+                        onOpenUsageAccessFromDialog = {
+                            showUsageAccessHelp.value = false
+                            pendingCaptureAfterUsageAccess.value = true
+                            requestUsageAccessPermission()
+                        },
                         isFirstLaunch = isFirstLaunch,
                         showOverlayPermissionHelp = showOverlayPermissionHelp.value,
                         onDismissOverlayPermissionHelp = { showOverlayPermissionHelp.value = false },
@@ -194,6 +226,10 @@ class MainActivity : ComponentActivity() {
             showOverlayPermissionHelp.value = true
             return
         }
+        if (!hasUsageAccess.value) {
+            showUsageAccessHelp.value = true
+            return
+        }
         ensurePermissionsAndRequestCapture()
     }
 
@@ -207,6 +243,14 @@ class MainActivity : ComponentActivity() {
             Uri.parse("$OVERLAY_PERMISSION_PACKAGE_PREFIX:$packageName")
         )
         overlayPermissionLauncher.launch(intent)
+    }
+
+    private fun refreshUsageAccessState() {
+        hasUsageAccess.value = ForegroundAppResolver.hasUsageAccess(this)
+    }
+
+    private fun requestUsageAccessPermission() {
+        usageAccessSettingsLauncher.launch(ForegroundAppResolver.createUsageAccessSettingsIntent())
     }
 
     private fun openSnapshotFolder() {
@@ -550,6 +594,12 @@ fun MainScreen(
     onOpenMyFiles: () -> Unit,
     requiresConfirmation: Boolean,
     onRequiresConfirmationChanged: (Boolean) -> Unit,
+    hasUsageAccess: Boolean,
+    onOpenUsageAccessSettings: () -> Unit,
+    showUsageAccessHelp: Boolean = false,
+    onDismissUsageAccessHelp: () -> Unit = {},
+    onContinueWithoutUsageAccess: () -> Unit = {},
+    onOpenUsageAccessFromDialog: () -> Unit = {},
     isFirstLaunch: Boolean = false,
     showOverlayPermissionHelp: Boolean = false,
     onDismissOverlayPermissionHelp: () -> Unit = {},
@@ -831,6 +881,33 @@ fun MainScreen(
                                 fontWeight = FontWeight.Medium,
                                 color = if (isCaptureReady) SamsungGreen else MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            if (!hasUsageAccess) {
+                                Surface(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    tonalElevation = 2.dp,
+                                    shape = MaterialTheme.shapes.medium,
+                                    color = SamsungBlueSubtle
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(14.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.usage_access_title),
+                                            style = MaterialTheme.typography.titleSmall,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.usage_access_body),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        TextButton(onClick = onOpenUsageAccessSettings) {
+                                            Text(text = stringResource(R.string.usage_access_open_settings))
+                                        }
+                                    }
+                                }
+                            }
                             statusMessage?.let { message ->
                                 Surface(
                                     modifier = Modifier.fillMaxWidth(),
@@ -1203,6 +1280,35 @@ fun MainScreen(
                     }
                 ) {
                     Text(text = stringResource(R.string.add_collection_cancel))
+                }
+            }
+        )
+    }
+
+    if (showUsageAccessHelp && !isPreview) {
+        AlertDialog(
+            onDismissRequest = onDismissUsageAccessHelp,
+            title = {
+                Text(text = stringResource(R.string.usage_access_dialog_title))
+            },
+            text = {
+                Text(text = stringResource(R.string.usage_access_dialog_body))
+            },
+            confirmButton = {
+                TextButton(onClick = onOpenUsageAccessFromDialog) {
+                    Text(text = stringResource(R.string.usage_access_open_settings))
+                }
+            },
+            dismissButton = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TextButton(onClick = onContinueWithoutUsageAccess) {
+                        Text(text = stringResource(R.string.usage_access_continue_without_suffix))
+                    }
+                    TextButton(onClick = onDismissUsageAccessHelp) {
+                        Text(text = stringResource(R.string.overlay_permission_help_close))
+                    }
                 }
             }
         )
@@ -1653,6 +1759,12 @@ fun MainScreenPreview() {
             onOpenMyFiles = {},
             requiresConfirmation = false,
             onRequiresConfirmationChanged = {},
+            hasUsageAccess = false,
+            onOpenUsageAccessSettings = {},
+            showUsageAccessHelp = false,
+            onDismissUsageAccessHelp = {},
+            onContinueWithoutUsageAccess = {},
+            onOpenUsageAccessFromDialog = {},
             isFirstLaunch = false,
             contentPadding = PaddingValues()
         )
