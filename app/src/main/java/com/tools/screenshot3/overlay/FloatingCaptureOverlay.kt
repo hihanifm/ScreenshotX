@@ -13,6 +13,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.TextView
 import com.tools.screenshot3.R
 import kotlin.math.abs
 import kotlin.math.max
@@ -24,6 +25,7 @@ object FloatingCaptureOverlay {
     private var windowManager: WindowManager? = null
     private var overlayView: View? = null
     private var layoutParams: WindowManager.LayoutParams? = null
+    private var hideStatusRunnable: Runnable? = null
 
     fun show(
         context: Context,
@@ -140,6 +142,33 @@ object FloatingCaptureOverlay {
 
         wm.addView(view, params)
     }
+
+    fun showStatus(message: String) {
+        val view = overlayView ?: return
+        val chip = view.findViewById<TextView>(R.id.overlayStatusChip)
+        val pendingHide = hideStatusRunnable
+        if (pendingHide != null) {
+            chip.removeCallbacks(pendingHide)
+            hideStatusRunnable = null
+        }
+
+        chip.text = message
+        chip.alpha = 1f
+        chip.visibility = View.VISIBLE
+
+        val hideRunnable = Runnable {
+            chip.animate()
+                .alpha(0f)
+                .setDuration(STATUS_FADE_DURATION_MS)
+                .withEndAction {
+                    chip.visibility = View.GONE
+                    chip.alpha = 1f
+                }
+                .start()
+        }
+        hideStatusRunnable = hideRunnable
+        chip.postDelayed(hideRunnable, STATUS_VISIBLE_DURATION_MS)
+    }
     
     fun jiggleButton() {
         android.util.Log.d("SSM-FloatingOverlay", "jiggleButton() public function called, overlayView: $overlayView")
@@ -218,6 +247,10 @@ object FloatingCaptureOverlay {
     fun hide(context: Context) {
         val wm = windowManager ?: return
         val view = overlayView ?: return
+        view.findViewById<TextView>(R.id.overlayStatusChip).let { chip ->
+            hideStatusRunnable?.let { chip.removeCallbacks(it) }
+            hideStatusRunnable = null
+        }
         try {
             wm.removeView(view)
         } catch (_: IllegalArgumentException) {
@@ -232,6 +265,8 @@ object FloatingCaptureOverlay {
     private const val KEY_OVERLAY_X = "overlay_x"
     private const val KEY_OVERLAY_Y = "overlay_y"
     private const val NO_SAVED_POSITION = Int.MIN_VALUE
+    private const val STATUS_VISIBLE_DURATION_MS = 1000L
+    private const val STATUS_FADE_DURATION_MS = 150L
 
     private fun clampPosition(
         lp: WindowManager.LayoutParams,

@@ -180,19 +180,24 @@ class ScreenshotService : android.app.Service() {
                     } finally {
                         delay(OVERLAY_RESUME_DELAY_MS)
                     }
-                    val message = if (uri != null) {
+                    if (uri != null) {
                         val folderLabel = resolveFolderLabel()
                         val currentFolder = ScreenCaptureManager.currentSubdirectory.value
                         val count = withContext(Dispatchers.IO) {
                             ScreenCaptureManager.getFolderItemCounts(applicationContext, listOf(currentFolder))[currentFolder] ?: 0
                         }
-                        getString(R.string.capture_saved_simple, folderLabel, count)
+                        if (ScreenCaptureManager.isReady()) {
+                            showFloatingControls()
+                            FloatingCaptureOverlay.showStatus(
+                                getString(R.string.capture_saved_chip, folderLabel, count)
+                            )
+                        }
                     } else {
-                        getString(R.string.capture_failed)
-                    }
-                    Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
-                    if (ScreenCaptureManager.isReady()) {
-                        showFloatingControls()
+                        val message = getString(R.string.capture_failed)
+                        Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
+                        if (ScreenCaptureManager.isReady()) {
+                            showFloatingControls()
+                        }
                     }
                 }
             }
@@ -208,7 +213,7 @@ class ScreenshotService : android.app.Service() {
 
     private fun handlePreviewDecision(accepted: Boolean) {
         serviceScope.launch {
-            val message = if (accepted) {
+            val successChipMessage = if (accepted) {
                 val pending = ScreenCaptureManager.getPendingCapture()
                 val folderLabel = pending?.let {
                     ScreenCaptureManager.getFolderLabel(applicationContext, it.subDirectory)
@@ -219,20 +224,35 @@ class ScreenshotService : android.app.Service() {
                     val count = withContext(Dispatchers.IO) {
                         ScreenCaptureManager.getFolderItemCounts(applicationContext, listOf(currentFolder))[currentFolder] ?: 0
                     }
-                    getString(R.string.capture_saved_simple, folderLabel, count)
+                    getString(R.string.capture_saved_chip, folderLabel, count)
                 } else {
-                    getString(R.string.capture_failed)
+                    null
                 }
             } else {
                 ScreenCaptureManager.discardPendingCapture()
-                getString(R.string.capture_discarded)
+                null
             }
-
-            Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
 
             delay(OVERLAY_RESUME_DELAY_MS)
             if (ScreenCaptureManager.isReady()) {
                 showFloatingControls()
+                if (accepted) {
+                    if (successChipMessage != null) {
+                        FloatingCaptureOverlay.showStatus(successChipMessage)
+                    } else {
+                        Toast.makeText(
+                            applicationContext,
+                            getString(R.string.capture_failed),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    Toast.makeText(
+                        applicationContext,
+                        getString(R.string.capture_discarded),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             } else {
                 stopSelf()
             }

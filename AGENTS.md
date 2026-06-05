@@ -1,52 +1,29 @@
 <claude-mem-context>
 # Memory Context
 
-# [ScreenshotX] recent context, 2026-06-05 1:26am EDT
+# [ScreenshotX] recent context, 2026-06-05 1:41am EDT
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
 Fetch details: get_observations([IDs]) | Search: mem-search skill
 
-Stats: 50 obs (22,036t read) | 404,155t work | 95% savings
+Stats: 50 obs (20,344t read) | 344,374t work | 94% savings
 
 ### Jun 4, 2026
-1551 8:13p ✅ Integrated hero card colors with Material Design 3 theme system
-1552 " 🔵 Compilation error: missing Color import in Theme.kt
-1553 " 🔴 Added missing Color import to Theme.kt
-1554 " 🔵 Samsung blue theme update successfully compiles
-1555 8:14p 🔵 Samsung blue theme implementation verified and ready for commit
-1557 8:16p 🔵 Comprehensive color usage audit reveals mixed hardcoded and theme-driven colors
-1558 8:25p ✅ Samsung blue theme refinements committed
-1559 8:29p 🔵 Current Samsung Blue theme structure identified
-1560 " 🔵 Complete UI structure and styling patterns documented
-1561 8:34p ⚖️ Samsung One UI visual polish design plan established
-1562 8:36p ✅ Samsung One UI visual polish plan documented and saved
-1563 " 🟣 Premium color palette added to Color.kt
-1564 " 🟣 Samsung-style typography hierarchy implemented in Type.kt
-1565 8:37p 🟣 Material3 theme refined with new color scheme and shape system
-1566 " ✅ MainActivity.kt imports reorganized and expanded for UI polish implementation
-1567 " 🟣 Header card upgraded with blue gradient background and enhanced shadow
 1568 8:38p 🟣 Setup card comprehensively redesigned with blue-tinted shadows, pill buttons, gradient fills, and scale pulse animation
 1569 " 🟣 Collections info card styled with blue-tinted shadows and white surface
 1595 8:55p 🔵 Floating button position management isolated to FloatingCaptureOverlay.kt
 1596 8:56p 🔵 Root cause: floating button position reset on every show() call—no persistence layer
 1597 " ⚖️ Choose persistent position storage across app restarts and service cycles
 1598 " 🔵 Overlay button background uses semi-transparent white stroke
-S543 Add visible white border circle to floating button for dark background visibility (Jun 4 at 8:56 PM)
 1599 " ⚖️ Simplified floating button visibility approach to white border ring
 1600 8:57p ✅ Floating button border ring enhanced for dark background visibility
-S544 Add visible white border ring to floating capture button for visibility on dark backgrounds (Jun 4 at 8:57 PM)
 1601 8:58p ✅ Floating button white border ring committed to main branch
-S545 Fix floating icon that always returns to same spot even after moving it and taking snapshot (Jun 4 at 8:58 PM)
 1602 " 🔴 Implement persistent float button position storage via SharedPreferences
-S546 Fix floating icon that always returns to same spot after moving and taking snapshot—implement persistent position storage (Jun 4 at 8:59 PM)
-S547 Add app name suffix to screenshot filenames when capturing from a specific app (e.g., Amazon). Determine technical feasibility and design approach. (Jun 4 at 9:00 PM)
 1605 9:01p 🔵 Screenshot filename generation uses timestamp only; foreground app detection requires additional permissions
 1606 " ⚖️ Adopt Android Usage Access permission for foreground app name detection in screenshot filenames
 1607 9:02p ⚖️ Standardized screenshot filename format with graceful fallback on app name resolution failure
-S548 Fix floating capture icon position resetting to default after snapshot — implement persistent position storage across captures, service restarts, and app relaunches. (Jun 4 at 9:03 PM)
 1608 9:04p 🔴 Floating overlay position now persists across captures and app restarts
-S549 Design and plan implementation of a screenshot collection guidance screen showing project goals, collection rules (50 mobile/50 web per category, 5-10 screenshots per app), and upload workflow with HTML asset approach. (Jun 4 at 9:04 PM)
 1609 " 🔵 Existing file segment sanitization pattern can be reused for app name in screenshot filenames
 1610 9:06p 🟣 Implemented foreground app name suffix for screenshot filenames using UsageStatsManager
 1611 " 🔵 Implementation patch application failed; new files not created; changes not applied to existing files
@@ -60,7 +37,6 @@ S549 Design and plan implementation of a screenshot collection guidance screen s
 1618 " 🔵 Existing Help and Guidance Infrastructure in ScreenshotX Application
 1619 " 🔵 ScreenshotX Uses Pure Jetpack Compose UI Without WebView
 1620 " ⚖️ Design Decisions for New Screenshot Collection Guidance Screen
-S550 Implement a collection guide screen for ScreenshotX app with HTML-backed content explaining collection rules, goals, and best practices to screenshot collectors. (Jun 5 at 1:17 AM)
 1621 1:18a 🟣 Added "Learn More" Button to Setup Card for Collection Guidance Navigation
 1622 " 🟣 Created CollectionGuideActivity with WebView Integration for HTML-Based Collection Guidance
 1623 1:19a 🟣 Created collection_guide.html Asset with Collection Goals, Rules, and Guidance
@@ -68,17 +44,41 @@ S550 Implement a collection guide screen for ScreenshotX app with HTML-backed co
 1625 " ✅ Added Korean Translations for Collection Guide Strings
 1626 1:20a 🟣 Collection Guide Screen Implementation
 1627 " 🔵 CollectionGuideActivity and Supporting Changes Compile Successfully
-S551 Design and implement a full-screen HTML-based collector guidance screen accessible via "Learn More" button in Setup card, showing collection goals, rules, do/don't guidance, and completion checklist with editable HTML asset. (Jun 5 at 1:20 AM)
 1628 1:24a ✅ Simplified collection_guide.html structure to reduce cognitive load
-S552 Simplify collection_guide.html by removing redundant sections and consolidating guidance to reduce cognitive load for users (Jun 5 at 1:25 AM)
-**Investigated**: Examined the existing HTML structure which contained: Hero section, Goal card with statistics grid, Rules card, Do/Don't two-column panels, and Final checklist section. Identified sections that duplicated information already covered in Rules.
+1629 1:26a 🔵 Collection guide feature in progress with new Activity and manifest integration
+1630 1:29a 🔵 Capture feedback UX decision point: current implementation uses Toast for every snapshot
+1631 " ⚖️ Capture feedback UX: implement tiny chip near floating button instead of Toast
+S557 Articulate karpathy-guidelines reasoning: replace intrusive Toast with minimal custom overlay chip; define surgical scope and success criteria (Jun 5 at 1:31 AM)
+S558 Replace Toast success feedback with minimal overlay chip near floating button; keep Toasts for failures (Jun 5 at 1:31 AM)
+1632 1:32a 🔵 Code structure reconnaissance: overlay architecture and Toast integration points identified
+1633 " 🔵 All three Toast success paths in ScreenshotService identified for replacement
+1634 " 🟣 Added overlay status chip UI structure to floating capture button layout
+1635 " 🟣 Created overlay status chip background drawable with pill shape design
+1636 1:33a 🟣 Added showStatus() method to FloatingCaptureOverlay for chip display and auto-hide
+1637 " 🟣 Replaced success Toast with chip feedback in ScreenshotService capture paths
+1638 " ✅ Added capture_saved_chip string resource for compact chip feedback text
+1639 " ✅ Added capture_saved_chip string resource to Korean localization
+1641 " 🟣 Replaced per-capture success toast with transient overlay chip
+S559 Replace slow per-capture toast feedback with faster overlay chip to enable rapid screenshot capture in ScreenshotX Android app (Jun 5 at 1:33 AM)
+S560 Refine chip text format: decide between minimal "Shopping (12)" vs. contextual "Saved in Shopping (12)" (Jun 5 at 1:33 AM)
+S561 Replace slow per-capture toast feedback with faster overlay chip to enable rapid screenshot capture in ScreenshotX Android app (Jun 5 at 1:35 AM)
+1642 1:36a ✅ Updated capture_saved_chip string format to include "Saved in" prefix for clarity
+1643 " ✅ Updated capture_saved_chip string in Korean localization to include context verb
+S562 Complete overlay chip capture feedback implementation with contextual "Saved in" messaging for English and Korean (Jun 5 at 1:36 AM)
+S563 Replace slow per-capture toast feedback with faster overlay chip to enable rapid screenshot capture in ScreenshotX Android app (Jun 5 at 1:36 AM)
+1645 " ✅ Adjusted chip display duration from 700ms to 1000ms for better visibility
+S564 Refine chip visibility timing from 700ms to 1000ms for better user perception during rapid capture (Jun 5 at 1:37 AM)
+S565 Replace slow per-capture toast feedback with faster overlay chip positioned below the floating icon to enable rapid screenshot capture in ScreenshotX Android app (Jun 5 at 1:37 AM)
+1647 1:38a ✅ Redesigned overlay layout from side-by-side to stacked vertical arrangement
+S566 Restructure overlay layout from side-by-side to vertical stacking; move chip below button to prevent horizontal expansion (Jun 5 at 1:39 AM)
+**Investigated**: FrameLayout side-by-side arrangement and its impact on overlay size; LinearLayout vertical stacking as alternative; layout positioning and spacing requirements for compact appearance.
 
-**Learned**: The original design used separate sections (Goal, Do/Don't, checklist) to reinforce guidance, but this created information redundancy. A three-card structure (Hero → Rules → Action) is sufficient to convey the mission, core guidance, and next steps without overwhelming users with repeated messaging.
+**Learned**: FrameLayout with side-by-side positioning (chip left, button right) causes overlay to expand horizontally when chip appears. LinearLayout with vertical stacking (button, 8dp gap, chip) keeps overlay width constant (52dp button width), improving visual stability. Vertical arrangement naturally centers contents with LinearLayout gravity="center_horizontal", reducing layout complexity vs. FrameLayout with absolute positioning.
 
-**Completed**: Restructured collection_guide.html to eliminate duplication: removed Goal section (100+, 50+50, 5-10 stat cards), removed Do/Don't panels, removed Final checklist. Condensed Rules from 5 items to 4 core rules with clearer language. Added simplified "When you are done" section with just the zip/upload instruction. Cleaned up unused CSS (--surface-soft, --primary, --success, --danger variables and .grid, .stat, .columns, .panel, .do, .dont, .checklist classes). File updated and verified.
+**Completed**: Overlay chip feature fully implemented and layout-refined: (1) Changed container from FrameLayout to LinearLayout, (2) Moved chip from left-of-button to below-button positioning, (3) Set orientation to vertical with 8dp spacing, (4) Contextual string messaging "Saved in [folder] ([count])" in English and Korean, (5) Chip display duration 1000ms + 150ms fade, (6) Build verified. Collection guide feature shipped separately (commit 80c8027).
 
-**Next Steps**: No further changes identified. The guide is ready for users. If in-app browser is refreshed, the simplified version will display immediately.
+**Next Steps**: Device testing: validate chip UX in vertical arrangement (text visibility, animation timing, visual balance between button and chip below). Optional polish: reduce 8dp gap or narrow chip max width (currently 180dp) if needed for visual refinement based on feel-test.
 
 
-Access 404k tokens of past work via get_observations([IDs]) or mem-search skill.
+Access 344k tokens of past work via get_observations([IDs]) or mem-search skill.
 </claude-mem-context>

@@ -64,6 +64,7 @@
     <string name="total_snapshots_loading">총 스크린샷: …</string>
     <string name="capture_saved">스크린샷을 %1$s에 저장했습니다</string>
     <string name="capture_saved_simple">스크린샷을 %1$s에 저장했습니다 (%2$d)</string>
+    <string name="capture_saved_chip">%1$s에 저장됨 (%2$d)</string>
     <string name="capture_failed">현재 프레임을 캡처할 수 없습니다</string>
     <string name="capture_discarded">스크린샷이 취소되었습니다</string>
     <string name="capture_preview_title">스크린샷을 %1$s에 저장하시겠습니까?</string>
