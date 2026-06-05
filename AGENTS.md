@@ -1,7 +1,7 @@
 <claude-mem-context>
 # Memory Context
 
-# [ScreenshotX] recent context, 2026-06-05 1:41am EDT
+# [ScreenshotX] recent context, 2026-06-05 1:43am EDT
 
 Legend: 🎯session 🔴bugfix 🟣feature 🔄refactor ✅change 🔵discovery ⚖️decision 🚨security_alert 🔐security_note
 Format: ID TIME TYPE TITLE
@@ -48,8 +48,6 @@ Stats: 50 obs (20,344t read) | 344,374t work | 94% savings
 1629 1:26a 🔵 Collection guide feature in progress with new Activity and manifest integration
 1630 1:29a 🔵 Capture feedback UX decision point: current implementation uses Toast for every snapshot
 1631 " ⚖️ Capture feedback UX: implement tiny chip near floating button instead of Toast
-S557 Articulate karpathy-guidelines reasoning: replace intrusive Toast with minimal custom overlay chip; define surgical scope and success criteria (Jun 5 at 1:31 AM)
-S558 Replace Toast success feedback with minimal overlay chip near floating button; keep Toasts for failures (Jun 5 at 1:31 AM)
 1632 1:32a 🔵 Code structure reconnaissance: overlay architecture and Toast integration points identified
 1633 " 🔵 All three Toast success paths in ScreenshotService identified for replacement
 1634 " 🟣 Added overlay status chip UI structure to floating capture button layout
@@ -59,7 +57,6 @@ S558 Replace Toast success feedback with minimal overlay chip near floating butt
 1638 " ✅ Added capture_saved_chip string resource for compact chip feedback text
 1639 " ✅ Added capture_saved_chip string resource to Korean localization
 1641 " 🟣 Replaced per-capture success toast with transient overlay chip
-S559 Replace slow per-capture toast feedback with faster overlay chip to enable rapid screenshot capture in ScreenshotX Android app (Jun 5 at 1:33 AM)
 S560 Refine chip text format: decide between minimal "Shopping (12)" vs. contextual "Saved in Shopping (12)" (Jun 5 at 1:33 AM)
 S561 Replace slow per-capture toast feedback with faster overlay chip to enable rapid screenshot capture in ScreenshotX Android app (Jun 5 at 1:35 AM)
 1642 1:36a ✅ Updated capture_saved_chip string format to include "Saved in" prefix for clarity
@@ -70,14 +67,17 @@ S563 Replace slow per-capture toast feedback with faster overlay chip to enable 
 S564 Refine chip visibility timing from 700ms to 1000ms for better user perception during rapid capture (Jun 5 at 1:37 AM)
 S565 Replace slow per-capture toast feedback with faster overlay chip positioned below the floating icon to enable rapid screenshot capture in ScreenshotX Android app (Jun 5 at 1:37 AM)
 1647 1:38a ✅ Redesigned overlay layout from side-by-side to stacked vertical arrangement
-S566 Restructure overlay layout from side-by-side to vertical stacking; move chip below button to prevent horizontal expansion (Jun 5 at 1:39 AM)
-**Investigated**: FrameLayout side-by-side arrangement and its impact on overlay size; LinearLayout vertical stacking as alternative; layout positioning and spacing requirements for compact appearance.
+S566 Restructure overlay layout from side-by-side to vertical stacking; move chip below button to prevent horizontal expansion (Jun 5 at 1:38 AM)
+S567 Complete and commit overlay capture status chip feature; replace Toast success feedback with compact vertical chip below floating button (Jun 5 at 1:39 AM)
+S568 Verify commit completion and handle uncommitted AGENTS.md documentation changes before push (Jun 5 at 1:42 AM)
+S569 Explain AGENTS.md uncommitted changes and offer to show diff for user review and decision (Jun 5 at 1:43 AM)
+**Investigated**: Identified AGENTS.md as configuration/instruction file (not app code); determined it contains post-commit local edits; confirmed user did not create original file, only noticed uncommitted changes during status check.
 
-**Learned**: FrameLayout with side-by-side positioning (chip left, button right) causes overlay to expand horizontally when chip appears. LinearLayout with vertical stacking (button, 8dp gap, chip) keeps overlay width constant (52dp button width), improving visual stability. Vertical arrangement naturally centers contents with LinearLayout gravity="center_horizontal", reducing layout complexity vs. FrameLayout with absolute positioning.
+**Learned**: AGENTS.md is project configuration file for coding agents (defines style, workflow, project-specific rules); separate from Android app codebase; typically created by project lead or agent tooling setup; uncommitted changes likely auto-generated from session activity.
 
-**Completed**: Overlay chip feature fully implemented and layout-refined: (1) Changed container from FrameLayout to LinearLayout, (2) Moved chip from left-of-button to below-button positioning, (3) Set orientation to vertical with 8dp spacing, (4) Contextual string messaging "Saved in [folder] ([count])" in English and Korean, (5) Chip display duration 1000ms + 150ms fade, (6) Build verified. Collection guide feature shipped separately (commit 80c8027).
+**Completed**: Two major features shipped and committed: (1) Collection guide simplification (80c8027), (2) Overlay capture status chip (e43e257). Both are production-ready code. AGENTS.md has post-session updates requiring user decision (keep/commit or discard).
 
-**Next Steps**: Device testing: validate chip UX in vertical arrangement (text visibility, animation timing, visual balance between button and chip below). Optional polish: reduce 8dp gap or narrow chip max width (currently 180dp) if needed for visual refinement based on feel-test.
+**Next Steps**: User decision on AGENTS.md: (1) Review the changes (Claude can show diff), (2) Decide whether to commit + push or discard, OR (3) Push current commits without AGENTS.md changes. No further feature development active.
 
 
 Access 344k tokens of past work via get_observations([IDs]) or mem-search skill.
