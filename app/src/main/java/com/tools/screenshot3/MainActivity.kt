@@ -47,6 +47,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -76,6 +78,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.tools.screenshot3.ui.theme.SamsungBlueGradientEnd
 import com.tools.screenshot3.ui.theme.SamsungBlueGradientStart
 import com.tools.screenshot3.ui.theme.SamsungBlueMedium
@@ -98,6 +101,16 @@ import java.io.File
 import java.util.Locale
 
 private const val OVERLAY_PERMISSION_PACKAGE_PREFIX = "package"
+
+private data class ZipProgressUiState(
+    val isRunning: Boolean = false,
+    val currentCollectionLabel: String? = null,
+    val completedCollections: Int = 0,
+    val totalCollections: Int = 0,
+    val completedFiles: Int = 0,
+    val totalFiles: Int = 0,
+    val message: String? = null
+)
 
 class MainActivity : ComponentActivity() {
     private val showOverlayPermissionHelp = mutableStateOf(false)
@@ -654,6 +667,7 @@ fun MainScreen(
     val zipErrorMessage = remember { mutableStateOf<Int?>(null) }
     val zipStatusMessage = remember { mutableStateOf<String?>(null) }
     val isZipping = remember { mutableStateOf(false) }
+    val zipProgressState = remember { mutableStateOf(ZipProgressUiState()) }
     val showZipSuccessDialog = remember { mutableStateOf(false) }
     val showAboutDialog = remember { mutableStateOf(false) }
     val showInitialReadyDialog = remember { mutableStateOf(false) }
@@ -1357,6 +1371,11 @@ fun MainScreen(
                         isZipping.value = true
                         zipStatusMessage.value = context.getString(R.string.zip_collections_progress)
                         zipErrorMessage.value = null
+                        zipProgressState.value = ZipProgressUiState(
+                            isRunning = true,
+                            message = context.getString(R.string.zip_progress_preparing)
+                        )
+                        showZipDialog.value = false
                         scope.launch {
                             try {
                                 val collectionsForZip = folderOptions.map { it.key to it.label }
@@ -1365,13 +1384,20 @@ fun MainScreen(
                                         context.applicationContext,
                                         collectionsForZip,
                                         enteredName
-                                    ) { current, total, labelText ->
+                                    ) { progress ->
                                         withContext(Dispatchers.Main) {
-                                            zipStatusMessage.value = context.getString(
-                                                R.string.zip_collections_progress_item,
-                                                current,
-                                                total,
-                                                labelText
+                                            zipProgressState.value = ZipProgressUiState(
+                                                isRunning = true,
+                                                currentCollectionLabel = progress.currentCollectionLabel,
+                                                completedCollections = progress.completedCollections,
+                                                totalCollections = progress.totalCollections,
+                                                completedFiles = progress.completedFiles,
+                                                totalFiles = progress.totalFiles,
+                                                message = if (progress.totalFiles > 0) {
+                                                    context.getString(R.string.zip_progress_please_wait)
+                                                } else {
+                                                    context.getString(R.string.zip_progress_preparing)
+                                                }
                                             )
                                         }
                                     }
@@ -1406,6 +1432,7 @@ fun MainScreen(
                             } catch (_: Throwable) {
                                 zipStatusMessage.value = context.getString(R.string.zip_collections_failure)
                             } finally {
+                                zipProgressState.value = ZipProgressUiState()
                                 zipErrorMessage.value = null
                                 showZipDialog.value = false
                                 isZipping.value = false
@@ -1429,6 +1456,93 @@ fun MainScreen(
                 }
             }
         )
+    }
+
+    if (zipProgressState.value.isRunning) {
+        val progressState = zipProgressState.value
+        val progressFraction = if (progressState.totalFiles > 0) {
+            progressState.completedFiles.toFloat() / progressState.totalFiles.toFloat()
+        } else {
+            null
+        }
+        Dialog(
+            onDismissRequest = { },
+            properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
+        ) {
+            Card(
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.zip_progress_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        text = progressState.currentCollectionLabel?.let {
+                            context.getString(R.string.zip_progress_current_collection, it)
+                        } ?: stringResource(R.string.zip_progress_preparing),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (progressFraction != null) {
+                        LinearProgressIndicator(
+                            progress = { progressFraction.coerceIn(0f, 1f) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    Text(
+                        text = if (progressState.totalFiles > 0) {
+                            stringResource(
+                                R.string.zip_progress_files,
+                                progressState.completedFiles,
+                                progressState.totalFiles
+                            )
+                        } else {
+                            stringResource(R.string.zip_progress_preparing)
+                        },
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = if (progressState.totalCollections > 0) {
+                            stringResource(
+                                R.string.zip_progress_collections,
+                                progressState.completedCollections,
+                                progressState.totalCollections
+                            )
+                        } else {
+                            stringResource(R.string.zip_progress_preparing)
+                        },
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    progressState.message?.let { message ->
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = SamsungTextTertiary
+                        )
+                    }
+                }
+            }
+        }
     }
 
     // Zip Success Dialog

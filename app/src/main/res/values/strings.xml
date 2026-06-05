@@ -46,6 +46,12 @@
     <string name="zip_collections_progress">Preparing zip files…</string>
     <string name="zip_collections_progress_item">Zipping %3$s (%1$d of %2$d)…</string>
     <string name="zip_collections_none">No zip files were created because the collections are empty.</string>
+    <string name="zip_progress_title">Creating zip files</string>
+    <string name="zip_progress_preparing">Preparing zip files…</string>
+    <string name="zip_progress_current_collection">Zipping %1$s</string>
+    <string name="zip_progress_files">%1$d of %2$d files</string>
+    <string name="zip_progress_collections">%1$d of %2$d collections</string>
+    <string name="zip_progress_please_wait">Please wait while your screenshots are packaged.</string>
     <string name="setup_section_title">Setup</string>
     <string name="collections_section_title">Collections</string>
     <string name="destination_folder_label">Choose destination folder</string>

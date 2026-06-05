@@ -398,26 +398,71 @@ private val _requiresConfirmation = MutableStateFlow(false)
         val errorMessage: String? = null
     )
 
+    data class ZipProgress(
+        val currentCollectionLabel: String? = null,
+        val completedCollections: Int = 0,
+        val totalCollections: Int = 0,
+        val completedFiles: Int = 0,
+        val totalFiles: Int = 0
+    )
+
+    private data class CollectionZipJob(
+        val key: String,
+        val label: String,
+        val items: List<MediaItem>
+    )
+
     suspend fun zipCollections(
         context: Context,
         collections: List<Pair<String, String>>,
         username: String,
-        onProgress: suspend (current: Int, total: Int, label: String) -> Unit = { _, _, _ -> }
+        onProgress: suspend (ZipProgress) -> Unit = { }
     ): List<CollectionZipResult> = withContext(Dispatchers.IO) {
         val results = mutableListOf<CollectionZipResult>()
         val normalizedUser = ScreenshotFilenameFormatter.sanitizeFileSegment(username).ifEmpty { "user" }
         Log.d(TAG, "SSM-zip-start totalCollections=${collections.size} user=$normalizedUser")
 
-        collections.forEachIndexed { index, (key, label) ->
+        val jobs = collections.mapNotNull { (key, label) ->
             val sanitizedKey = sanitizeSubdirectory(key)
             val effectiveLabel = label.ifBlank { DEFAULT_COLLECTION_LABEL }
             val items = queryCollectionItems(context, sanitizedKey)
             if (items.isEmpty()) {
                 Log.d(TAG, "SSM-zip-skip-empty key=$sanitizedKey")
-                return@forEachIndexed
+                null
+            } else {
+                CollectionZipJob(
+                    key = sanitizedKey,
+                    label = effectiveLabel,
+                    items = items
+                )
             }
+        }
+        val totalCollections = jobs.size
+        val totalFiles = jobs.sumOf { it.items.size }
+        onProgress(
+            ZipProgress(
+                totalCollections = totalCollections,
+                totalFiles = totalFiles
+            )
+        )
+
+        var completedCollections = 0
+        var completedFiles = 0
+
+        jobs.forEach { job ->
+            val sanitizedKey = job.key
+            val effectiveLabel = job.label
+            val items = job.items
             val zipFileName = buildZipFileName(normalizedUser, effectiveLabel, items.size)
-            onProgress(index + 1, collections.size, effectiveLabel)
+            onProgress(
+                ZipProgress(
+                    currentCollectionLabel = effectiveLabel,
+                    completedCollections = completedCollections,
+                    totalCollections = totalCollections,
+                    completedFiles = completedFiles,
+                    totalFiles = totalFiles
+                )
+            )
             Log.d(TAG, "SSM-zip-prepare key=$sanitizedKey items=${items.size}")
 
             val destination = createZipDestination(context, zipFileName)
@@ -433,7 +478,18 @@ private val _requiresConfirmation = MutableStateFlow(false)
                         errorMessage = "Unable to create zip destination"
                     )
                 )
-                return@forEachIndexed
+                completedCollections += 1
+                completedFiles += items.size
+                onProgress(
+                    ZipProgress(
+                        currentCollectionLabel = effectiveLabel,
+                        completedCollections = completedCollections,
+                        totalCollections = totalCollections,
+                        completedFiles = completedFiles,
+                        totalFiles = totalFiles
+                    )
+                )
+                return@forEach
             }
 
             var success = false
@@ -442,17 +498,30 @@ private val _requiresConfirmation = MutableStateFlow(false)
                 BufferedOutputStream(destination.outputStream).use { buffered ->
                     ZipOutputStream(buffered).use { zipStream ->
                         items.forEach { item ->
-                            val inputStream = item.open()
-                            if (inputStream != null) {
-                                val entryName = item.name.ifBlank { "image_${System.currentTimeMillis()}" }
-                                val zipEntry = ZipEntry(entryName)
-                                zipStream.putNextEntry(zipEntry)
-                                BufferedInputStream(inputStream).use { bufferedInput ->
-                                    bufferedInput.copyTo(zipStream)
+                            try {
+                                val inputStream = item.open()
+                                if (inputStream != null) {
+                                    val entryName = item.name.ifBlank { "image_${System.currentTimeMillis()}" }
+                                    val zipEntry = ZipEntry(entryName)
+                                    zipStream.putNextEntry(zipEntry)
+                                    BufferedInputStream(inputStream).use { bufferedInput ->
+                                        bufferedInput.copyTo(zipStream)
+                                    }
+                                    zipStream.closeEntry()
+                                } else {
+                                    Log.w(TAG, "SSM-zip-missingInput key=$sanitizedKey file=${item.name}")
                                 }
-                                zipStream.closeEntry()
-                            } else {
-                                Log.w(TAG, "SSM-zip-missingInput key=$sanitizedKey file=${item.name}")
+                            } finally {
+                                completedFiles += 1
+                                onProgress(
+                                    ZipProgress(
+                                        currentCollectionLabel = effectiveLabel,
+                                        completedCollections = completedCollections,
+                                        totalCollections = totalCollections,
+                                        completedFiles = completedFiles,
+                                        totalFiles = totalFiles
+                                    )
+                                )
                             }
                         }
                     }
@@ -474,6 +543,17 @@ private val _requiresConfirmation = MutableStateFlow(false)
                     )
                 )
             }
+
+            completedCollections += 1
+            onProgress(
+                ZipProgress(
+                    currentCollectionLabel = effectiveLabel,
+                    completedCollections = completedCollections,
+                    totalCollections = totalCollections,
+                    completedFiles = completedFiles,
+                    totalFiles = totalFiles
+                )
+            )
 
             if (success) {
                 results.add(
