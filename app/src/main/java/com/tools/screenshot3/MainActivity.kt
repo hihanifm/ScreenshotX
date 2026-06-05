@@ -141,7 +141,7 @@ class MainActivity : ComponentActivity() {
         ScreenCaptureManager.initializeSettings(applicationContext)
         val isFirstLaunch = savedInstanceState == null
         setContent {
-            Screenshot3Theme {
+            Screenshot3Theme(dynamicColor = false) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     val captureActive by ScreenCaptureManager.isSessionActive.collectAsState()
                     val selectedFolder by ScreenCaptureManager.currentSubdirectory.collectAsState()
@@ -650,7 +650,7 @@ fun MainScreen(
     ) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = Color(0xFFE8F5E9),
+            color = MaterialTheme.colorScheme.primaryContainer,
             shape = MaterialTheme.shapes.large,
             tonalElevation = 4.dp,
             shadowElevation = 6.dp
@@ -665,13 +665,13 @@ fun MainScreen(
                 Text(
                     text = stringResource(R.string.screen_title),
                     style = MaterialTheme.typography.headlineSmall,
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = stringResource(R.string.screen_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.82f),
                     textAlign = TextAlign.Center
                 )
             }
