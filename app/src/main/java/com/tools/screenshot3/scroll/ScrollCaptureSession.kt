@@ -71,6 +71,13 @@ class ScrollCaptureSession(initialBitmap: Bitmap) {
         return uri
     }
 
+    fun takeResultBitmap(): Bitmap? {
+        isActive = false
+        val bitmap = stitchedBitmap ?: return null
+        stitchedBitmap = null
+        return bitmap
+    }
+
     fun cancel() {
         isActive = false
         stitchedBitmap?.recycle()
