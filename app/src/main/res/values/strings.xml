@@ -88,7 +88,7 @@
     <string name="usage_access_dialog_body">Android requires Usage Access in Settings before Screenshot S can add the current app name to saved screenshot filenames.</string>
     <string name="usage_access_continue_without_suffix">Continue without app name</string>
     <string name="button_help">Help!</string>
-    <string name="button_learn_more">Learn more</string>
+    <string name="button_learn_more">The Rules</string>
     <string name="button_collection_help">Help!</string>
     <string name="button_feedback">Feedbacks are welcome!</string>
     <string name="button_about">About</string>
