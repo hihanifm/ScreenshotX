@@ -1,5 +1,12 @@
 # Releasing Screenshot3
 
+**One command** (build + tag + GitHub release): `./scripts/publish-release.sh`
+- Derives the tag from `versionName` in `app/build.gradle.kts`, so bump that first.
+- Refuses to run on a dirty tree or if the release already exists.
+- `./scripts/publish-release.sh notes.md` to supply release notes; `DRAFT=1 ./scripts/publish-release.sh` for a draft.
+
+Manual steps (equivalent):
+
 1. Build the release APK:
    - Terminal: `./scripts/build-release.sh`
    - Android Studio: Gradle tool window -> `app` -> `Tasks` -> `distribution` -> `buildInternalRelease`
