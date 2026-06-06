@@ -77,6 +77,8 @@
     <string name="setting_image_format_subtitle">JPEG는 용량을 줄이고, PNG는 글자와 경계를 더 선명하게 유지합니다.</string>
     <string name="setting_image_format_jpeg">JPEG</string>
     <string name="setting_image_format_png">PNG</string>
+    <string name="setting_strip_scroll_nav_bar_title">스크롤 내비게이션 바 제거</string>
+    <string name="setting_strip_scroll_nav_bar_subtitle">이어 붙인 스크롤 캡처에서 Android 뒤로, 홈, 최근 앱 바를 제거합니다.</string>
     <string name="setting_scroll_capture_title">스크롤 캡처</string>
     <string name="setting_scroll_capture_subtitle">캡처할 때마다 긴 페이지를 스크롤하여 이어 붙입니다 (접근성 필요).</string>
     <string name="usage_access_title">앱 이름 파일명 사용</string>

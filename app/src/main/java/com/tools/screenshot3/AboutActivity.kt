@@ -90,8 +90,10 @@ fun AboutScreen(
     var showSetupHelp by remember { mutableStateOf(false) }
     var showCollectionHelp by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
     val requiresConfirmation by ScreenCaptureManager.requiresConfirmation.collectAsState()
     val imageFormat by ScreenCaptureManager.imageFormat.collectAsState()
+    val stripScrollNavBar by ScreenCaptureManager.stripScrollNavBar.collectAsState()
     val currentLanguage = LocaleHelper.getSavedLanguage(context)
     val releaseNotesText = remember {
         try {
@@ -106,6 +108,7 @@ fun AboutScreen(
             .fillMaxSize()
             .statusBarsPadding()
             .navigationBarsPadding()
+            .verticalScroll(scrollState)
             .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -211,6 +214,38 @@ fun AboutScreen(
             }
         }
 
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    ScreenCaptureManager.updateStripScrollNavBar(context, !stripScrollNavBar)
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = stripScrollNavBar,
+                onCheckedChange = {
+                    ScreenCaptureManager.updateStripScrollNavBar(context, it)
+                }
+            )
+            Column(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.setting_strip_scroll_nav_bar_title),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = stringResource(R.string.setting_strip_scroll_nav_bar_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
         // Build information
         val packageInfo = try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -270,8 +305,7 @@ fun AboutScreen(
             )
         }
 
-        // Spacer to push buttons to bottom
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.heightIn(min = 8.dp))
 
         // Feedback button
         Button(

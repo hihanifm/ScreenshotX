@@ -259,7 +259,7 @@ class ScreenshotService : android.app.Service() {
     }
 
     private fun enterScrollCaptureMode(initialBitmap: android.graphics.Bitmap) {
-        val session = ScrollCaptureSession(initialBitmap)
+        val session = ScrollCaptureSession(applicationContext, initialBitmap)
         scrollCaptureSession = session
 
         if (ScreenCaptureManager.isReady()) {

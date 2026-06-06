@@ -128,6 +128,7 @@ private data class ZipProgressUiState(
 class MainActivity : ComponentActivity() {
     private val showOverlayPermissionHelp = mutableStateOf(false)
     private val showUsageAccessHelp = mutableStateOf(false)
+    private val showAccessibilityPermissionHelp = mutableStateOf(false)
     private val hasUsageAccess = mutableStateOf(false)
     private val pendingCaptureAfterUsageAccess = mutableStateOf(false)
     private val hasAccessibilityService = mutableStateOf(false)
@@ -247,12 +248,20 @@ class MainActivity : ComponentActivity() {
                             showOverlayPermissionHelp.value = false
                             requestOverlayPermission()
                         },
+                        showAccessibilityPermissionHelp = showAccessibilityPermissionHelp.value,
+                        onDismissAccessibilityPermissionHelp = {
+                            showAccessibilityPermissionHelp.value = false
+                        },
                         hasAccessibilityService = hasAccessibilityService.value,
                         onOpenAccessibilitySettings = {
+                            showAccessibilityPermissionHelp.value = false
                             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                         },
                         scrollCaptureEnabled = scrollCaptureEnabled,
                         onScrollCaptureChanged = {
+                            if (it && !hasAccessibilityService.value) {
+                                showAccessibilityPermissionHelp.value = true
+                            }
                             ScreenCaptureManager.updateScrollCaptureEnabled(applicationContext, it)
                         }
                     )
@@ -268,6 +277,10 @@ class MainActivity : ComponentActivity() {
         }
         if (!hasUsageAccess.value) {
             showUsageAccessHelp.value = true
+            return
+        }
+        if (ScreenCaptureManager.isScrollCaptureEnabled() && !hasAccessibilityService.value) {
+            showAccessibilityPermissionHelp.value = true
             return
         }
         ensurePermissionsAndRequestCapture()
@@ -645,6 +658,8 @@ fun MainScreen(
     showOverlayPermissionHelp: Boolean = false,
     onDismissOverlayPermissionHelp: () -> Unit = {},
     onOpenOverlayPermissionSettings: () -> Unit = {},
+    showAccessibilityPermissionHelp: Boolean = false,
+    onDismissAccessibilityPermissionHelp: () -> Unit = {},
     hasAccessibilityService: Boolean = true,
     onOpenAccessibilitySettings: () -> Unit = {},
     scrollCaptureEnabled: Boolean = false,
@@ -1743,6 +1758,13 @@ fun MainScreen(
         )
     }
 
+    if (showAccessibilityPermissionHelp && !isPreview) {
+        AccessibilityPermissionHelpDialog(
+            onDismiss = onDismissAccessibilityPermissionHelp,
+            onOpenSettings = onOpenAccessibilitySettings
+        )
+    }
+
 }
 
 @Composable
@@ -1800,6 +1822,32 @@ private fun OverlayPermissionHelpDialog(
             }
         }
     }
+}
+
+@Composable
+private fun AccessibilityPermissionHelpDialog(
+    onDismiss: () -> Unit,
+    onOpenSettings: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(text = stringResource(R.string.accessibility_help_title))
+        },
+        text = {
+            Text(text = stringResource(R.string.accessibility_help_body))
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = stringResource(R.string.overlay_permission_help_close))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onOpenSettings) {
+                Text(text = stringResource(R.string.accessibility_help_open_settings))
+            }
+        }
+    )
 }
 
 @Composable

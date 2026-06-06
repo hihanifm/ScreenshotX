@@ -42,6 +42,7 @@ object ScreenCaptureManager {
     private const val KEY_REQUIRE_CONFIRMATION = "require_confirmation"
     private const val KEY_SCROLL_CAPTURE = "scroll_capture_enabled"
     private const val KEY_IMAGE_FORMAT = "image_format"
+    private const val KEY_STRIP_SCROLL_NAV_BAR = "strip_scroll_nav_bar"
 
     private val _isSessionActive = MutableStateFlow(false)
     val isSessionActive: StateFlow<Boolean> = _isSessionActive.asStateFlow()
@@ -61,6 +62,9 @@ object ScreenCaptureManager {
     private val _imageFormat = MutableStateFlow(ScreenshotImageFormat.default)
     val imageFormat: StateFlow<ScreenshotImageFormat> = _imageFormat.asStateFlow()
 
+    private val _stripScrollNavBar = MutableStateFlow(true)
+    val stripScrollNavBar: StateFlow<Boolean> = _stripScrollNavBar.asStateFlow()
+
     @Volatile
     private var preferences: SharedPreferences? = null
 
@@ -78,6 +82,7 @@ object ScreenCaptureManager {
             _imageFormat.value = ScreenshotImageFormat.fromStorageValue(
                 prefs.getString(KEY_IMAGE_FORMAT, ScreenshotImageFormat.default.storageValue)
             )
+            _stripScrollNavBar.value = prefs.getBoolean(KEY_STRIP_SCROLL_NAV_BAR, true)
             preferencesInitialized = true
         }
     }
@@ -327,6 +332,15 @@ object ScreenCaptureManager {
     }
 
     fun currentImageFormat(): ScreenshotImageFormat = _imageFormat.value
+
+    fun updateStripScrollNavBar(context: Context, enabled: Boolean) {
+        ensurePreferences(context)
+        if (_stripScrollNavBar.value == enabled) return
+        _stripScrollNavBar.value = enabled
+        preferences?.edit()?.putBoolean(KEY_STRIP_SCROLL_NAV_BAR, enabled)?.apply()
+    }
+
+    fun shouldStripScrollNavBar(): Boolean = _stripScrollNavBar.value
 
     fun getFolderLabel(context: Context, folder: String = currentSubdirectory.value): String {
         val current = sanitizeSubdirectory(folder)
