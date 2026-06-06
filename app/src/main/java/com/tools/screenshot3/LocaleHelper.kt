@@ -20,6 +20,11 @@ object LocaleHelper {
     private const val LANGUAGE_FRENCH = "fr"
     private const val LANGUAGE_GERMAN = "de"
     private const val LANGUAGE_PORTUGUESE = "pt"
+    private const val LANGUAGE_INDONESIAN = "id"
+    private const val LANGUAGE_VIETNAMESE = "vi"
+    private const val LANGUAGE_TURKISH = "tr"
+    private const val LANGUAGE_RUSSIAN = "ru"
+    private const val LANGUAGE_ITALIAN = "it"
     
     fun getSavedLanguage(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -65,6 +70,11 @@ object LocaleHelper {
             LANGUAGE_FRENCH -> "Français"
             LANGUAGE_GERMAN -> "Deutsch"
             LANGUAGE_PORTUGUESE -> "Português"
+            LANGUAGE_INDONESIAN -> "Bahasa Indonesia"
+            LANGUAGE_VIETNAMESE -> "Tiếng Việt"
+            LANGUAGE_TURKISH -> "Türkçe"
+            LANGUAGE_RUSSIAN -> "Русский"
+            LANGUAGE_ITALIAN -> "Italiano"
             else -> "English"
         }
     }
@@ -80,7 +90,12 @@ object LocaleHelper {
             LANGUAGE_CHINESE,
             LANGUAGE_FRENCH,
             LANGUAGE_GERMAN,
-            LANGUAGE_PORTUGUESE
+            LANGUAGE_PORTUGUESE,
+            LANGUAGE_INDONESIAN,
+            LANGUAGE_VIETNAMESE,
+            LANGUAGE_TURKISH,
+            LANGUAGE_RUSSIAN,
+            LANGUAGE_ITALIAN
         )
     }
 }

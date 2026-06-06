@@ -95,6 +95,7 @@ import com.tools.screenshot3.ui.theme.SamsungShadowBlue
 import com.tools.screenshot3.ui.theme.SamsungTextTertiary
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.content.pm.PackageInfoCompat
 import com.tools.screenshot3.capture.ForegroundAppResolver
 import com.tools.screenshot3.scroll.ScrollCaptureAccessibilityService
 import com.tools.screenshot3.capture.ScreenCaptureManager
@@ -367,7 +368,7 @@ class MainActivity : ComponentActivity() {
         // Check if Samsung My Files is installed
         val isSamsungMyFilesInstalled = try {
             val packageInfo = packageManager.getPackageInfo(samsungMyFilesPackage, 0)
-            Log.d(TAG, "SSM-launch-samsung-installed versionName=${packageInfo.versionName} versionCode=${packageInfo.longVersionCode}")
+            Log.d(TAG, "SSM-launch-samsung-installed versionName=${packageInfo.versionName} versionCode=${PackageInfoCompat.getLongVersionCode(packageInfo)}")
             true
         } catch (e: Exception) {
             Log.w(TAG, "SSM-launch-samsung-not-installed error=${e.message}")
