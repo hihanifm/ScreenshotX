@@ -18,6 +18,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,9 +52,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -748,7 +753,6 @@ fun MainScreen(
     }
 
     val showStatsScreen = remember { mutableStateOf(false) }
-    val selectedStatsApp = remember { mutableStateOf<String?>(null) }
     val appStatsState = remember { mutableStateOf<List<ScreenCaptureManager.AppStat>>(emptyList()) }
     val appStatsLoadingState = remember { mutableStateOf(false) }
 
@@ -772,12 +776,7 @@ fun MainScreen(
             stats = appStatsState.value,
             loading = appStatsLoadingState.value,
             collectionLabelFor = collectionLabelFor,
-            selectedAppKey = selectedStatsApp.value,
-            onSelectApp = { selectedStatsApp.value = it },
-            onClose = {
-                selectedStatsApp.value = null
-                showStatsScreen.value = false
-            }
+            onClose = { showStatsScreen.value = false }
         )
     }
 
@@ -1935,16 +1934,49 @@ private fun OverlayPermissionMockRow(
     }
 }
 
+private data class StatGroup(
+    val key: String,
+    val label: String,
+    val total: Int,
+    val children: List<Pair<String, Int>>
+)
+
 @Composable
 private fun StatsScreen(
     stats: List<ScreenCaptureManager.AppStat>,
     loading: Boolean,
     collectionLabelFor: (String) -> String,
-    selectedAppKey: String?,
-    onSelectApp: (String?) -> Unit,
     onClose: () -> Unit
 ) {
-    val selectedStat = selectedAppKey?.let { key -> stats.firstOrNull { it.appKey == key } }
+    val statsTab = remember { mutableStateOf(0) }
+    val expandedKey = remember { mutableStateOf<String?>(null) }
+
+    val groups: List<StatGroup> = remember(stats, statsTab.value, collectionLabelFor) {
+        if (statsTab.value == 0) {
+            stats.map { stat ->
+                StatGroup(
+                    key = stat.appKey,
+                    label = stat.appLabel,
+                    total = stat.total,
+                    children = stat.byCollection.entries
+                        .sortedByDescending { it.value }
+                        .map { collectionLabelFor(it.key) to it.value }
+                )
+            }
+        } else {
+            val appLabelByKey = stats.associate { it.appKey to it.appLabel }
+            ScreenshotStatsParser.invertToCategories(stats).map { category ->
+                StatGroup(
+                    key = category.categoryKey,
+                    label = collectionLabelFor(category.categoryKey),
+                    total = category.total,
+                    children = category.byApp.entries
+                        .sortedByDescending { it.value }
+                        .map { (appLabelByKey[it.key] ?: it.key) to it.value }
+                )
+            }
+        }
+    }
 
     Dialog(
         onDismissRequest = onClose,
@@ -1966,7 +1998,7 @@ private fun StatsScreen(
                         .padding(horizontal = 8.dp, vertical = 14.dp)
                 ) {
                     IconButton(
-                        onClick = { if (selectedStat != null) onSelectApp(null) else onClose() },
+                        onClick = onClose,
                         modifier = Modifier.align(Alignment.CenterStart)
                     ) {
                         Icon(
@@ -1976,10 +2008,29 @@ private fun StatsScreen(
                         )
                     }
                     Text(
-                        text = selectedStat?.appLabel ?: stringResource(R.string.stats_title),
+                        text = stringResource(R.string.stats_title),
                         style = MaterialTheme.typography.titleLarge,
                         color = Color.White,
                         modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                TabRow(selectedTabIndex = statsTab.value) {
+                    Tab(
+                        selected = statsTab.value == 0,
+                        onClick = {
+                            statsTab.value = 0
+                            expandedKey.value = null
+                        },
+                        text = { Text(stringResource(R.string.stats_tab_apps)) }
+                    )
+                    Tab(
+                        selected = statsTab.value == 1,
+                        onClick = {
+                            statsTab.value = 1
+                            expandedKey.value = null
+                        },
+                        text = { Text(stringResource(R.string.stats_tab_categories)) }
                     )
                 }
 
@@ -1992,7 +2043,7 @@ private fun StatsScreen(
                             CircularProgressIndicator()
                         }
                     }
-                    stats.isEmpty() -> {
+                    groups.isEmpty() -> {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -2004,42 +2055,20 @@ private fun StatsScreen(
                             )
                         }
                     }
-                    selectedStat == null -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            items(stats, key = { it.appKey }) { stat ->
-                                StatRow(
-                                    label = stat.appLabel,
-                                    count = stat.total,
-                                    onClick = { onSelectApp(stat.appKey) }
-                                )
-                            }
-                        }
-                    }
                     else -> {
-                        val collectionRows = selectedStat.byCollection.entries
-                            .sortedByDescending { it.value }
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            item {
-                                Text(
-                                    text = stringResource(R.string.stats_app_total, selectedStat.total),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 4.dp)
-                                )
-                            }
-                            items(collectionRows, key = { it.key }) { entry ->
-                                StatRow(
-                                    label = collectionLabelFor(entry.key),
-                                    count = entry.value,
-                                    onClick = null
+                            items(groups, key = { it.key }) { group ->
+                                StatGroupCard(
+                                    group = group,
+                                    expanded = expandedKey.value == group.key,
+                                    onToggle = {
+                                        expandedKey.value =
+                                            if (expandedKey.value == group.key) null else group.key
+                                    }
                                 )
                             }
                         }
@@ -2051,56 +2080,79 @@ private fun StatsScreen(
 }
 
 @Composable
-private fun StatRow(
-    label: String,
-    count: Int,
-    onClick: (() -> Unit)?
+private fun StatGroupCard(
+    group: StatGroup,
+    expanded: Boolean,
+    onToggle: () -> Unit
 ) {
-    val cardModifier = Modifier
-        .fillMaxWidth()
-        .shadow(
-            elevation = 2.dp,
-            shape = MaterialTheme.shapes.medium,
-            spotColor = Color(0x0D000000),
-            ambientColor = Color(0x0D000000)
-        )
-    val cardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    val rowContent: @Composable () -> Unit = {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 18.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium
+    Card(
+        onClick = onToggle,
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 2.dp,
+                shape = MaterialTheme.shapes.medium,
+                spotColor = Color(0x0D000000),
+                ambientColor = Color(0x0D000000)
             )
-            Text(
-                text = count.toString(),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
-            )
+            .animateContentSize(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 18.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = group.label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)
+                )
+                Text(
+                    text = group.total.toString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            if (expanded) {
+                group.children.forEach { (label, count) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 42.dp, end = 18.dp, top = 6.dp, bottom = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = count.toString(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
-    }
-    if (onClick != null) {
-        Card(
-            onClick = onClick,
-            modifier = cardModifier,
-            shape = MaterialTheme.shapes.medium,
-            colors = cardColors,
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) { rowContent() }
-    } else {
-        Card(
-            modifier = cardModifier,
-            shape = MaterialTheme.shapes.medium,
-            colors = cardColors,
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) { rowContent() }
     }
 }
 

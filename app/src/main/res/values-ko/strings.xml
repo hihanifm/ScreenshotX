@@ -124,4 +124,6 @@
     <string name="stats_empty">아직 스크린샷이 없습니다</string>
     <string name="stats_app_total">스크린샷 %1$d개</string>
     <string name="stats_back">뒤로</string>
+    <string name="stats_tab_apps">앱별</string>
+    <string name="stats_tab_categories">카테고리별</string>
 </resources>

@@ -69,4 +69,29 @@ object ScreenshotStatsParser {
             RawAppStat(appKey, byCollection.values.sum(), byCollection.toMap())
         }.sortedByDescending { it.total }
     }
+
+    /** One collection bucket with its total and per-app breakdown (app keys). */
+    data class RawCategoryStat(
+        val categoryKey: String,
+        val total: Int,
+        val byApp: Map<String, Int>
+    )
+
+    /**
+     * Transpose of [ScreenCaptureManager.AppStat]: regroups app -> collection counts into
+     * collection -> app counts, sorted by total descending. Same numbers, just inverted, so
+     * the category view never disagrees with the app view. Label resolution stays in the UI.
+     */
+    fun invertToCategories(apps: List<ScreenCaptureManager.AppStat>): List<RawCategoryStat> {
+        val acc = LinkedHashMap<String, MutableMap<String, Int>>()
+        for (app in apps) {
+            for ((collectionKey, count) in app.byCollection) {
+                val byApp = acc.getOrPut(collectionKey) { LinkedHashMap() }
+                byApp[app.appKey] = (byApp[app.appKey] ?: 0) + count
+            }
+        }
+        return acc.map { (categoryKey, byApp) ->
+            RawCategoryStat(categoryKey, byApp.values.sum(), byApp.toMap())
+        }.sortedByDescending { it.total }
+    }
 }

@@ -124,4 +124,6 @@
     <string name="stats_empty" tools:ignore="MissingTranslation">No screenshots yet</string>
     <string name="stats_app_total" tools:ignore="MissingTranslation">%1$d screenshots</string>
     <string name="stats_back" tools:ignore="MissingTranslation">Back</string>
+    <string name="stats_tab_apps" tools:ignore="MissingTranslation">By app</string>
+    <string name="stats_tab_categories" tools:ignore="MissingTranslation">By category</string>
 </resources>

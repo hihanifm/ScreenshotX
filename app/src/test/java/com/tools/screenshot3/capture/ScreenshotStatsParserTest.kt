@@ -89,4 +89,45 @@ class ScreenshotStatsParserTest {
         val rows = listOf("photo.png" to "Pictures/Screenshot3/movies/")
         assertEquals(emptyList<ScreenshotStatsParser.RawAppStat>(), ScreenshotStatsParser.aggregate(rows))
     }
+
+    // --- invertToCategories ---
+
+    private fun appStat(key: String, byCollection: Map<String, Int>) =
+        ScreenCaptureManager.AppStat(
+            appKey = key,
+            appLabel = key,
+            total = byCollection.values.sum(),
+            byCollection = byCollection
+        )
+
+    @Test
+    fun invert_transposesToCategoriesSortedByTotal() {
+        val apps = listOf(
+            appStat("chrome", mapOf("movies" to 1, "shopping" to 2)),
+            appStat("amazon", mapOf("shopping" to 1)),
+            appStat("", mapOf("" to 1))
+        )
+
+        val categories = ScreenshotStatsParser.invertToCategories(apps)
+
+        // shopping (3) > movies (1) == root "" (1); shopping first.
+        assertEquals(listOf("shopping", "movies", ""), categories.map { it.categoryKey })
+
+        val shopping = categories.first { it.categoryKey == "shopping" }
+        assertEquals(3, shopping.total)
+        assertEquals(mapOf("chrome" to 2, "amazon" to 1), shopping.byApp)
+    }
+
+    @Test
+    fun invert_totalsReconcileWithAppTotals() {
+        val apps = listOf(
+            appStat("chrome", mapOf("movies" to 1, "shopping" to 2)),
+            appStat("amazon", mapOf("shopping" to 1))
+        )
+
+        val appsTotal = apps.sumOf { it.total }
+        val categoriesTotal = ScreenshotStatsParser.invertToCategories(apps).sumOf { it.total }
+
+        assertEquals(appsTotal, categoriesTotal)
+    }
 }
