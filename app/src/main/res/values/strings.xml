@@ -56,7 +56,7 @@
     <string name="collections_section_title">Collections</string>
     <string name="destination_folder_label">Choose destination folder</string>
     <string name="folder_default">Default</string>
-    <string name="hint_filter_assignee">Filter collections</string>
+    <string name="hint_filter_assignee">Search collections</string>
     <string name="selected_folder">Current selection: %1$s</string>
     <string name="selected_folder_format">%1$s (selected)</string>
     <string name="total_collections_format">Total collections: %1$d</string>
