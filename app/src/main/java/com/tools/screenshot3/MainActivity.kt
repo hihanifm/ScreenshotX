@@ -50,8 +50,10 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -96,6 +98,7 @@ import androidx.core.content.FileProvider
 import com.tools.screenshot3.capture.ForegroundAppResolver
 import com.tools.screenshot3.scroll.ScrollCaptureAccessibilityService
 import com.tools.screenshot3.capture.ScreenCaptureManager
+import com.tools.screenshot3.capture.ScreenshotStatsParser
 import com.tools.screenshot3.data.CollectionRepository
 import com.tools.screenshot3.ui.theme.Screenshot3Theme
 import kotlinx.coroutines.Dispatchers
@@ -743,6 +746,40 @@ fun MainScreen(
         }
     }
 
+    val showStatsScreen = remember { mutableStateOf(false) }
+    val selectedStatsApp = remember { mutableStateOf<String?>(null) }
+    val appStatsState = remember { mutableStateOf<List<ScreenCaptureManager.AppStat>>(emptyList()) }
+    val appStatsLoadingState = remember { mutableStateOf(false) }
+
+    LaunchedEffect(showStatsScreen.value, captureEvents) {
+        if (showStatsScreen.value && !isPreview) {
+            appStatsLoadingState.value = true
+            appStatsState.value = ScreenCaptureManager.getAppStats(context.applicationContext)
+            appStatsLoadingState.value = false
+        }
+    }
+
+    val collectionLabelFor: (String) -> String = remember(folderOptions) {
+        val labels = folderOptions.associate { it.key to it.label }
+        ({ key: String ->
+            labels[key] ?: ScreenshotStatsParser.titleCase(key).ifEmpty { key }
+        })
+    }
+
+    if (showStatsScreen.value) {
+        StatsScreen(
+            stats = appStatsState.value,
+            loading = appStatsLoadingState.value,
+            collectionLabelFor = collectionLabelFor,
+            selectedAppKey = selectedStatsApp.value,
+            onSelectApp = { selectedStatsApp.value = it },
+            onClose = {
+                selectedStatsApp.value = null
+                showStatsScreen.value = false
+            }
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1093,6 +1130,12 @@ fun MainScreen(
                                 )
                             }
 
+                            TextButton(
+                                onClick = { showStatsScreen.value = true },
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text(text = stringResource(R.string.stats_title))
+                            }
                         }
                     }
                 }
@@ -1888,6 +1931,175 @@ private fun OverlayPermissionMockRow(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun StatsScreen(
+    stats: List<ScreenCaptureManager.AppStat>,
+    loading: Boolean,
+    collectionLabelFor: (String) -> String,
+    selectedAppKey: String?,
+    onSelectApp: (String?) -> Unit,
+    onClose: () -> Unit
+) {
+    val selectedStat = selectedAppKey?.let { key -> stats.firstOrNull { it.appKey == key } }
+
+    Dialog(
+        onDismissRequest = onClose,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(SamsungBlueGradientStart, SamsungBlueGradientEnd)
+                            )
+                        )
+                        .padding(horizontal = 8.dp, vertical = 14.dp)
+                ) {
+                    IconButton(
+                        onClick = { if (selectedStat != null) onSelectApp(null) else onClose() },
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.stats_back),
+                            tint = Color.White
+                        )
+                    }
+                    Text(
+                        text = selectedStat?.appLabel ?: stringResource(R.string.stats_title),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+
+                when {
+                    loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    stats.isEmpty() -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = stringResource(R.string.stats_empty),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    selectedStat == null -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            items(stats, key = { it.appKey }) { stat ->
+                                StatRow(
+                                    label = stat.appLabel,
+                                    count = stat.total,
+                                    onClick = { onSelectApp(stat.appKey) }
+                                )
+                            }
+                        }
+                    }
+                    else -> {
+                        val collectionRows = selectedStat.byCollection.entries
+                            .sortedByDescending { it.value }
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            item {
+                                Text(
+                                    text = stringResource(R.string.stats_app_total, selectedStat.total),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                            }
+                            items(collectionRows, key = { it.key }) { entry ->
+                                StatRow(
+                                    label = collectionLabelFor(entry.key),
+                                    count = entry.value,
+                                    onClick = null
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatRow(
+    label: String,
+    count: Int,
+    onClick: (() -> Unit)?
+) {
+    val cardModifier = Modifier
+        .fillMaxWidth()
+        .shadow(
+            elevation = 2.dp,
+            shape = MaterialTheme.shapes.medium,
+            spotColor = Color(0x0D000000),
+            ambientColor = Color(0x0D000000)
+        )
+    val cardColors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    val rowContent: @Composable () -> Unit = {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = count.toString(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+    if (onClick != null) {
+        Card(
+            onClick = onClick,
+            modifier = cardModifier,
+            shape = MaterialTheme.shapes.medium,
+            colors = cardColors,
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) { rowContent() }
+    } else {
+        Card(
+            modifier = cardModifier,
+            shape = MaterialTheme.shapes.medium,
+            colors = cardColors,
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) { rowContent() }
     }
 }
 

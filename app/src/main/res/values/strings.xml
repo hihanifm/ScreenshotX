@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Screenshot S</string>
     <string name="notification_title">Screen capture active</string>
     <string name="notification_channel_name">Screen Capture</string>
@@ -26,32 +26,32 @@
     <string name="button_stop_capture">STOP</string>
     <string name="button_save_capture">Test Me!</string>
     <string name="button_browse_snapshots">Browse</string>
-    <string name="button_zip_collections">Zip All</string>
-    <string name="button_open_zip_folder">Open Zips</string>
-    <string name="button_open_myfiles">Open MyFiles app</string>
+    <string name="button_zip_collections" tools:ignore="MissingTranslation">Zip All</string>
+    <string name="button_open_zip_folder" tools:ignore="MissingTranslation">Open Zips</string>
+    <string name="button_open_myfiles" tools:ignore="MissingTranslation">Open MyFiles app</string>
     <string name="button_add_collection">Add Collection</string>
-    <string name="zip_browse_not_supported">Browsing zip files not supported on this device.</string>
+    <string name="zip_browse_not_supported" tools:ignore="MissingTranslation">Browsing zip files not supported on this device.</string>
     <string name="add_collection_title">New collection</string>
     <string name="add_collection_label">Collection name</string>
     <string name="add_collection_confirm">Add</string>
     <string name="add_collection_cancel">Cancel</string>
-    <string name="zip_collections_title">Zip collections</string>
-    <string name="zip_collections_username_label">Username</string>
-    <string name="zip_collections_confirm">Zip</string>
-    <string name="zip_collections_cancel">Cancel</string>
-    <string name="zip_collections_success">Created %1$d zip files in Download/ScreenshotCollections. Use your computer or \'My Files\' app to access the zip files.</string>
-    <string name="zip_collections_success_dialog">🎉 Screenshots Collected Successfully!\n\nYour screenshots have been neatly packaged into ZIP files—one for each collection.\n\n📁 Location: Download/ScreenshotCollections\n\n📎 To continue, simply connect your device to your PC and copy these ZIP files.\n\nOnce transferred, you can upload them to Mosaic.</string>
-    <string name="zip_collections_partial">Created %1$d zip files. %2$d collections failed.</string>
-    <string name="zip_collections_failure">Unable to create zip files.</string>
-    <string name="zip_collections_progress">Preparing zip files…</string>
-    <string name="zip_collections_progress_item">Zipping %3$s (%1$d of %2$d)…</string>
-    <string name="zip_collections_none">No zip files were created because the collections are empty.</string>
-    <string name="zip_progress_title">Creating zip files</string>
-    <string name="zip_progress_preparing">Preparing zip files…</string>
-    <string name="zip_progress_current_collection">Zipping %1$s</string>
-    <string name="zip_progress_files">%1$d of %2$d files</string>
-    <string name="zip_progress_collections">%1$d of %2$d collections</string>
-    <string name="zip_progress_please_wait">Please wait while your screenshots are packaged.</string>
+    <string name="zip_collections_title" tools:ignore="MissingTranslation">Zip collections</string>
+    <string name="zip_collections_username_label" tools:ignore="MissingTranslation">Username</string>
+    <string name="zip_collections_confirm" tools:ignore="MissingTranslation">Zip</string>
+    <string name="zip_collections_cancel" tools:ignore="MissingTranslation">Cancel</string>
+    <string name="zip_collections_success" tools:ignore="MissingTranslation">Created %1$d zip files in Download/ScreenshotCollections. Use your computer or \'My Files\' app to access the zip files.</string>
+    <string name="zip_collections_success_dialog" tools:ignore="MissingTranslation">🎉 Screenshots Collected Successfully!\n\nYour screenshots have been neatly packaged into ZIP files—one for each collection.\n\n📁 Location: Download/ScreenshotCollections\n\n📎 To continue, simply connect your device to your PC and copy these ZIP files.\n\nOnce transferred, you can upload them to Mosaic.</string>
+    <string name="zip_collections_partial" tools:ignore="MissingTranslation">Created %1$d zip files. %2$d collections failed.</string>
+    <string name="zip_collections_failure" tools:ignore="MissingTranslation">Unable to create zip files.</string>
+    <string name="zip_collections_progress" tools:ignore="MissingTranslation">Preparing zip files…</string>
+    <string name="zip_collections_progress_item" tools:ignore="MissingTranslation">Zipping %3$s (%1$d of %2$d)…</string>
+    <string name="zip_collections_none" tools:ignore="MissingTranslation">No zip files were created because the collections are empty.</string>
+    <string name="zip_progress_title" tools:ignore="MissingTranslation">Creating zip files</string>
+    <string name="zip_progress_preparing" tools:ignore="MissingTranslation">Preparing zip files…</string>
+    <string name="zip_progress_current_collection" tools:ignore="MissingTranslation">Zipping %1$s</string>
+    <string name="zip_progress_files" tools:ignore="MissingTranslation">%1$d of %2$d files</string>
+    <string name="zip_progress_collections" tools:ignore="MissingTranslation">%1$d of %2$d collections</string>
+    <string name="zip_progress_please_wait" tools:ignore="MissingTranslation">Please wait while your screenshots are packaged.</string>
     <string name="setup_section_title">Setup</string>
     <string name="collections_section_title">Collections</string>
     <string name="destination_folder_label">Choose destination folder</string>
@@ -91,24 +91,24 @@
     <string name="button_how_to_collect">How To Collect Screenshots</string>
     <string name="button_language">Language: %1$s</string>
     <string name="language_dialog_title">Select Language</string>
-    <string name="about_build_time">Build time: %1$s</string>
-    <string name="about_version_code">Version code: %1$s</string>
-    <string name="about_version_name">Version name: %1$s</string>
-    <string name="feedback_dialog_title">Thanks for reaching out</string>
-    <string name="feedback_dialog_message">Feel free to reachout to MNOs Lab NJ</string>
+    <string name="about_build_time" tools:ignore="MissingTranslation">Build time: %1$s</string>
+    <string name="about_version_code" tools:ignore="MissingTranslation">Version code: %1$s</string>
+    <string name="about_version_name" tools:ignore="MissingTranslation">Version name: %1$s</string>
+    <string name="feedback_dialog_title" tools:ignore="MissingTranslation">Thanks for reaching out</string>
+    <string name="feedback_dialog_message" tools:ignore="MissingTranslation">Feel free to reachout to MNOs Lab NJ</string>
     <string name="setup_help_title">How setup works</string>
     <string name="setup_help_close">Close</string>
     <string name="setup_flow_content_description">Illustration of the setup flow</string>
-    <string name="setup_help_missing_art">Setup illustration unavailable. Please add setup_flow.png to res/drawable(-nodpi).</string>
+    <string name="setup_help_missing_art" tools:ignore="MissingTranslation">Setup illustration unavailable. Please add setup_flow.png to res/drawable(-nodpi).</string>
     <string name="collection_help_title">How collections work</string>
     <string name="collection_guide_title">Collector Guide</string>
-    <string name="collection_guide_unavailable">Collection guide unavailable. Please add collection_guide.html to app/src/main/assets.</string>
-    <string name="collection_help_missing_art">Collections illustration unavailable. Please add screenshot_collection_flow.png to res/drawable(-nodpi).</string>
+    <string name="collection_guide_unavailable" tools:ignore="MissingTranslation">Collection guide unavailable. Please add collection_guide.html to app/src/main/assets.</string>
+    <string name="collection_help_missing_art" tools:ignore="MissingTranslation">Collections illustration unavailable. Please add screenshot_collection_flow.png to res/drawable(-nodpi).</string>
     <string name="collection_flow_content_description">Illustration of the collections flow</string>
     <string name="snapshot_browse_not_supported">Browsing snapshots not supported on this device.</string>
     <string name="error_collection_empty">Please enter a collection name.</string>
     <string name="error_collection_duplicate">Collection already exists.</string>
-    <string name="error_zip_username_empty">Please enter a username.</string>
+    <string name="error_zip_username_empty" tools:ignore="MissingTranslation">Please enter a username.</string>
     <string name="accessibility_service_description">Enables scroll capture by performing scroll gestures on the current app.</string>
     <string name="scroll_more_button">Scroll down and capture more</string>
     <string name="scroll_capture_started">Tap ↓ to scroll &amp; capture more, or ✓ to save</string>
@@ -119,4 +119,9 @@
     <string name="accessibility_help_title">Enable scroll capture</string>
     <string name="accessibility_help_body">To use scroll capture, enable the Screenshot S accessibility service in Settings → Accessibility → Installed apps.</string>
     <string name="accessibility_help_open_settings">Open Accessibility Settings</string>
+    <string name="stats_title" tools:ignore="MissingTranslation">Statistics</string>
+    <string name="stats_unknown_app" tools:ignore="MissingTranslation">Unknown</string>
+    <string name="stats_empty" tools:ignore="MissingTranslation">No screenshots yet</string>
+    <string name="stats_app_total" tools:ignore="MissingTranslation">%1$d screenshots</string>
+    <string name="stats_back" tools:ignore="MissingTranslation">Back</string>
 </resources>

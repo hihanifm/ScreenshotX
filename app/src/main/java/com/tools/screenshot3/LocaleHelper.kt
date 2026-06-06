@@ -12,6 +12,14 @@ object LocaleHelper {
     
     private const val LANGUAGE_ENGLISH = "en"
     private const val LANGUAGE_KOREAN = "ko"
+    private const val LANGUAGE_POLISH = "pl"
+    private const val LANGUAGE_HINDI = "hi"
+    private const val LANGUAGE_SPANISH = "es"
+    private const val LANGUAGE_JAPANESE = "ja"
+    private const val LANGUAGE_CHINESE = "zh"
+    private const val LANGUAGE_FRENCH = "fr"
+    private const val LANGUAGE_GERMAN = "de"
+    private const val LANGUAGE_PORTUGUESE = "pt"
     
     fun getSavedLanguage(context: Context): String {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -49,12 +57,30 @@ object LocaleHelper {
         return when (language) {
             LANGUAGE_ENGLISH -> "English"
             LANGUAGE_KOREAN -> "한국어"
+            LANGUAGE_POLISH -> "Polski"
+            LANGUAGE_HINDI -> "हिन्दी"
+            LANGUAGE_SPANISH -> "Español"
+            LANGUAGE_JAPANESE -> "日本語"
+            LANGUAGE_CHINESE -> "中文"
+            LANGUAGE_FRENCH -> "Français"
+            LANGUAGE_GERMAN -> "Deutsch"
+            LANGUAGE_PORTUGUESE -> "Português"
             else -> "English"
         }
     }
     
     fun getAvailableLanguages(): List<String> {
-        return listOf(LANGUAGE_ENGLISH, LANGUAGE_KOREAN)
+        return listOf(
+            LANGUAGE_ENGLISH,
+            LANGUAGE_KOREAN,
+            LANGUAGE_POLISH,
+            LANGUAGE_HINDI,
+            LANGUAGE_SPANISH,
+            LANGUAGE_JAPANESE,
+            LANGUAGE_CHINESE,
+            LANGUAGE_FRENCH,
+            LANGUAGE_GERMAN,
+            LANGUAGE_PORTUGUESE
+        )
     }
 }
-

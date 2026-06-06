@@ -16,6 +16,7 @@ import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
 import android.view.Surface
+import com.tools.screenshot3.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -425,6 +426,115 @@ private val _requiresConfirmation = MutableStateFlow(false)
         }
         Log.d(TAG, "SSM-count-end")
         counts
+    }
+
+    /** One app's screenshot stats: total plus a per-collection breakdown (collection keys). */
+    data class AppStat(
+        val appKey: String,
+        val appLabel: String,
+        val total: Int,
+        val byCollection: Map<String, Int>
+    )
+
+    /**
+     * Per-app screenshot counts derived live from MediaStore. Plain suspend fun (like
+     * [getFolderItemCounts]) — the caller holds the result in composable-local state.
+     * App labels are title-cased from the sanitized suffix; the empty suffix bucket gets
+     * the localized "Unknown" label.
+     */
+    suspend fun getAppStats(context: Context): List<AppStat> = withContext(Dispatchers.IO) {
+        val rows = queryAllScreenshots(context)
+        val unknownLabel = context.getString(R.string.stats_unknown_app)
+        ScreenshotStatsParser.aggregate(rows).map { raw ->
+            AppStat(
+                appKey = raw.appKey,
+                appLabel = if (raw.appKey.isEmpty()) {
+                    unknownLabel
+                } else {
+                    ScreenshotStatsParser.titleCase(raw.appKey)
+                },
+                total = raw.total,
+                byCollection = raw.byCollection
+            )
+        }
+    }
+
+    /**
+     * Single query over the whole `Pictures/Screenshot3/` tree, returning
+     * (DISPLAY_NAME, RELATIVE_PATH) pairs for [ScreenshotStatsParser] to aggregate.
+     */
+    private fun queryAllScreenshots(context: Context): List<Pair<String, String>> {
+        val resolver = context.contentResolver
+        val rows = mutableListOf<Pair<String, String>>()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val base = "${Environment.DIRECTORY_PICTURES}/Screenshot3"
+            val projection = arrayOf(
+                MediaStore.Images.Media.DISPLAY_NAME,
+                MediaStore.Images.Media.RELATIVE_PATH
+            )
+            val selection =
+                "${MediaStore.Images.Media.RELATIVE_PATH} = ? OR " +
+                    "${MediaStore.Images.Media.RELATIVE_PATH} = ? OR " +
+                    "${MediaStore.Images.Media.RELATIVE_PATH} LIKE ?"
+            val selectionArgs = arrayOf("$base/", base, "$base/%")
+
+            resolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                val nameIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
+                val pathIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH)
+                while (cursor.moveToNext()) {
+                    val name = cursor.getString(nameIndex) ?: continue
+                    val path = cursor.getString(pathIndex) ?: ""
+                    rows.add(name to path)
+                }
+            }
+        } else {
+            val root = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "Screenshot3"
+            )
+            val basePath = root.absolutePath
+            val projection = arrayOf(
+                MediaStore.Images.Media.DATA,
+                MediaStore.Images.Media.DISPLAY_NAME
+            )
+            val selection = "${MediaStore.Images.Media.DATA} LIKE ?"
+            val selectionArgs = arrayOf("$basePath%")
+
+            resolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                val dataIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                val nameIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
+                while (cursor.moveToNext()) {
+                    val path = cursor.getString(dataIndex) ?: continue
+                    val file = File(path)
+                    if (!file.exists()) continue
+                    val name = cursor.getString(nameIndex) ?: file.name
+                    // Synthesize a relative path so the parser can extract the collection key.
+                    val parent = file.parentFile?.name ?: ""
+                    val relativePath = if (parent == "Screenshot3") {
+                        "Screenshot3/"
+                    } else {
+                        "Screenshot3/$parent/"
+                    }
+                    rows.add(name to relativePath)
+                }
+            }
+        }
+
+        Log.d(TAG, "SSM-appstats-rows count=${rows.size}")
+        return rows
     }
 
     data class CollectionZipResult(
