@@ -10,20 +10,25 @@ class ScreenshotStatsParserTest {
 
     @Test
     fun appKey_extractsSimpleSuffix() {
-        assertEquals("amazon", ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1717556400000_amazon.png"))
+        assertEquals("amazon", ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1717556400000_amazon.jpg"))
     }
 
     @Test
     fun appKey_keepsSuffixWithUnderscores() {
         assertEquals(
             "google_maps",
-            ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1717556400000_google_maps.png")
+            ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1717556400000_google_maps.jpg")
         )
     }
 
     @Test
     fun appKey_emptyWhenNoSuffix() {
-        assertEquals("", ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1717556400000.png"))
+        assertEquals("", ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1717556400000.jpg"))
+    }
+
+    @Test
+    fun appKey_acceptsLegacyPngNames() {
+        assertEquals("amazon", ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1717556400000_amazon.png"))
     }
 
     @Test
@@ -62,11 +67,11 @@ class ScreenshotStatsParserTest {
     @Test
     fun aggregate_groupsByAppAndCollectionSortedByTotal() {
         val rows = listOf(
-            "Screenshot_1_chrome.png" to "Pictures/Screenshot3/movies/",
+            "Screenshot_1_chrome.jpg" to "Pictures/Screenshot3/movies/",
             "Screenshot_2_chrome.png" to "Pictures/Screenshot3/shopping/",
-            "Screenshot_3_chrome.png" to "Pictures/Screenshot3/shopping/",
-            "Screenshot_4_amazon.png" to "Pictures/Screenshot3/shopping/",
-            "Screenshot_5.png" to "Pictures/Screenshot3/",
+            "Screenshot_3_chrome.jpg" to "Pictures/Screenshot3/shopping/",
+            "Screenshot_4_amazon.jpg" to "Pictures/Screenshot3/shopping/",
+            "Screenshot_5.jpg" to "Pictures/Screenshot3/",
             "IMG_unrelated.jpg" to "Pictures/Screenshot3/movies/"
         )
 

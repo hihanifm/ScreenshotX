@@ -41,6 +41,7 @@ object ScreenCaptureManager {
     private const val PREFS_NAME = "screenshot3_preferences"
     private const val KEY_REQUIRE_CONFIRMATION = "require_confirmation"
     private const val KEY_SCROLL_CAPTURE = "scroll_capture_enabled"
+    private const val KEY_IMAGE_FORMAT = "image_format"
 
     private val _isSessionActive = MutableStateFlow(false)
     val isSessionActive: StateFlow<Boolean> = _isSessionActive.asStateFlow()
@@ -51,11 +52,14 @@ object ScreenCaptureManager {
     private val _captureEvents = MutableStateFlow(0L)
     val captureEvents: StateFlow<Long> = _captureEvents.asStateFlow()
 
-private val _requiresConfirmation = MutableStateFlow(false)
+    private val _requiresConfirmation = MutableStateFlow(false)
     val requiresConfirmation: StateFlow<Boolean> = _requiresConfirmation.asStateFlow()
 
     private val _scrollCaptureEnabled = MutableStateFlow(false)
     val scrollCaptureEnabled: StateFlow<Boolean> = _scrollCaptureEnabled.asStateFlow()
+
+    private val _imageFormat = MutableStateFlow(ScreenshotImageFormat.default)
+    val imageFormat: StateFlow<ScreenshotImageFormat> = _imageFormat.asStateFlow()
 
     @Volatile
     private var preferences: SharedPreferences? = null
@@ -71,6 +75,9 @@ private val _requiresConfirmation = MutableStateFlow(false)
             preferences = prefs
             _requiresConfirmation.value = prefs.getBoolean(KEY_REQUIRE_CONFIRMATION, false)
             _scrollCaptureEnabled.value = prefs.getBoolean(KEY_SCROLL_CAPTURE, false)
+            _imageFormat.value = ScreenshotImageFormat.fromStorageValue(
+                prefs.getString(KEY_IMAGE_FORMAT, ScreenshotImageFormat.default.storageValue)
+            )
             preferencesInitialized = true
         }
     }
@@ -312,6 +319,15 @@ private val _requiresConfirmation = MutableStateFlow(false)
 
     fun isScrollCaptureEnabled(): Boolean = _scrollCaptureEnabled.value
 
+    fun updateImageFormat(context: Context, format: ScreenshotImageFormat) {
+        ensurePreferences(context)
+        if (_imageFormat.value == format) return
+        _imageFormat.value = format
+        preferences?.edit()?.putString(KEY_IMAGE_FORMAT, format.storageValue)?.apply()
+    }
+
+    fun currentImageFormat(): ScreenshotImageFormat = _imageFormat.value
+
     fun getFolderLabel(context: Context, folder: String = currentSubdirectory.value): String {
         val current = sanitizeSubdirectory(folder)
         if (current.isEmpty()) {
@@ -350,10 +366,14 @@ private val _requiresConfirmation = MutableStateFlow(false)
         val collection = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
         val resolver = context.contentResolver
-        val name = ScreenshotFilenameFormatter.buildScreenshotFilename(appSuffix = appSuffix)
+        val format = currentImageFormat()
+        val name = ScreenshotFilenameFormatter.buildScreenshotFilename(
+            appSuffix = appSuffix,
+            format = format
+        )
         val values = ContentValues().apply {
             put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, name)
-            put(android.provider.MediaStore.Images.Media.MIME_TYPE, "image/png")
+            put(android.provider.MediaStore.Images.Media.MIME_TYPE, format.mimeType)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(
                     android.provider.MediaStore.Images.Media.RELATIVE_PATH,
@@ -380,7 +400,7 @@ private val _requiresConfirmation = MutableStateFlow(false)
         }
 
         outputStream.use { stream ->
-            if (!bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)) {
+            if (!bitmap.compress(format.compressFormat, format.compressQuality, stream)) {
                 resolver.delete(uri, null, null)
                 return null
             }

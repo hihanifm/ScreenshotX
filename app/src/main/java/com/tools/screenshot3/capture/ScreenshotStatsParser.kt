@@ -12,8 +12,8 @@ import java.util.Locale
 object ScreenshotStatsParser {
 
     private const val PREFIX = "Screenshot_"
-    private const val EXTENSION = ".png"
     private const val ROOT_DIR = "Screenshot3"
+    private val VALID_EXTENSIONS = setOf(".png", ".jpg")
 
     /** One app bucket with its total and per-collection breakdown (all keyed, not labeled). */
     data class RawAppStat(
@@ -24,13 +24,15 @@ object ScreenshotStatsParser {
 
     /**
      * Extracts the sanitized app suffix from a screenshot DISPLAY_NAME.
-     * Format: `Screenshot_<timestamp>_<appSuffix>.png` or `Screenshot_<timestamp>.png`.
+     * Format: `Screenshot_<timestamp>_<appSuffix>.(png|jpg)` or `Screenshot_<timestamp>.(png|jpg)`.
      * Returns `""` when there is no app suffix (the "Unknown" bucket), or `null` when the
      * name does not match the screenshot scheme (caller ignores it).
      */
     fun appKeyFromDisplayName(displayName: String): String? {
         if (!displayName.startsWith(PREFIX)) return null
-        val core = displayName.removePrefix(PREFIX).removeSuffix(EXTENSION)
+        val extension = VALID_EXTENSIONS.firstOrNull { displayName.endsWith(it, ignoreCase = true) }
+            ?: return null
+        val core = displayName.removePrefix(PREFIX).removeSuffix(extension)
         // core is "<timestamp>" or "<timestamp>_<suffix>"; the suffix itself may contain '_'.
         val firstUnderscore = core.indexOf('_')
         return if (firstUnderscore < 0) "" else core.substring(firstUnderscore + 1)

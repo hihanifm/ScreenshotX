@@ -28,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -46,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tools.screenshot3.capture.ScreenCaptureManager
+import com.tools.screenshot3.capture.ScreenshotImageFormat
 import com.tools.screenshot3.ui.theme.Screenshot3Theme
 
 class AboutActivity : ComponentActivity() {
@@ -55,6 +57,7 @@ class AboutActivity : ComponentActivity() {
     
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
+        ScreenCaptureManager.initializeSettings(applicationContext)
         enableEdgeToEdge()
         setContent {
             Screenshot3Theme {
@@ -85,6 +88,7 @@ fun AboutScreen(
     var showCollectionHelp by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
     val requiresConfirmation by ScreenCaptureManager.requiresConfirmation.collectAsState()
+    val imageFormat by ScreenCaptureManager.imageFormat.collectAsState()
     val currentLanguage = LocaleHelper.getSavedLanguage(context)
     val releaseNotesText = remember {
         try {
@@ -164,6 +168,42 @@ fun AboutScreen(
                     text = stringResource(R.string.setting_require_confirmation_subtitle),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.setting_image_format_title),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = stringResource(R.string.setting_image_format_subtitle),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ImageFormatOption(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.setting_image_format_jpeg),
+                    selected = imageFormat == ScreenshotImageFormat.JPEG,
+                    onClick = {
+                        ScreenCaptureManager.updateImageFormat(context, ScreenshotImageFormat.JPEG)
+                    }
+                )
+                ImageFormatOption(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.setting_image_format_png),
+                    selected = imageFormat == ScreenshotImageFormat.PNG,
+                    onClick = {
+                        ScreenCaptureManager.updateImageFormat(context, ScreenshotImageFormat.PNG)
+                    }
                 )
             }
         }
@@ -475,6 +515,28 @@ fun AboutScreen(
                     Text(text = stringResource(R.string.setup_help_close))
                 }
             }
+        )
+    }
+}
+
+@Composable
+private fun ImageFormatOption(
+    modifier: Modifier = Modifier,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = modifier.clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = onClick
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }
