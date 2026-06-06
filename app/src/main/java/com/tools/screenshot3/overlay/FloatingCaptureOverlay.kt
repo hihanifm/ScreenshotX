@@ -11,6 +11,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageButton
@@ -37,7 +38,8 @@ object FloatingCaptureOverlay {
 
     fun show(
         context: Context,
-        onCapture: () -> Unit
+        onCapture: () -> Unit,
+        onOpenApp: () -> Unit
     ) {
         if (overlayView != null) return
 
@@ -97,7 +99,15 @@ object FloatingCaptureOverlay {
             private var initialTouchX = 0f
             private var initialTouchY = 0f
             private var hasMoved = false
+            private var longPressTriggered = false
+            private var longPressRunnable: Runnable? = null
             private val touchSlop = appContext.resources.displayMetrics.density * 4
+            private val longPressTimeout = ViewConfiguration.getLongPressTimeout().toLong()
+
+            private fun cancelLongPress(view: View) {
+                longPressRunnable?.let(view::removeCallbacks)
+                longPressRunnable = null
+            }
 
             override fun onTouch(v: View, event: MotionEvent): Boolean {
                 val lp = layoutParams ?: return false
@@ -109,6 +119,15 @@ object FloatingCaptureOverlay {
                         initialTouchY = event.rawY
                         downTime = event.downTime
                         hasMoved = false
+                        longPressTriggered = false
+                        val runnable = Runnable {
+                            if (!hasMoved) {
+                                longPressTriggered = true
+                                onOpenApp()
+                            }
+                        }
+                        longPressRunnable = runnable
+                        v.postDelayed(runnable, longPressTimeout)
                         return true
                     }
                     MotionEvent.ACTION_MOVE -> {
@@ -116,6 +135,7 @@ object FloatingCaptureOverlay {
                         val deltaY = event.rawY - initialTouchY
                         if (!hasMoved && (abs(deltaX) > touchSlop || abs(deltaY) > touchSlop)) {
                             hasMoved = true
+                            cancelLongPress(v)
                         }
                         if (hasMoved) {
                             lp.x = (initialX + deltaX).toInt()
@@ -126,8 +146,11 @@ object FloatingCaptureOverlay {
                         return true
                     }
                     MotionEvent.ACTION_UP -> {
+                        cancelLongPress(v)
                         val elapsed = event.eventTime - downTime
-                        if (!hasMoved && elapsed < CLICK_MAX_DURATION_MS) {
+                        if (longPressTriggered) {
+                            longPressTriggered = false
+                        } else if (!hasMoved && elapsed < CLICK_MAX_DURATION_MS) {
                             v.performClick()
                         } else if (hasMoved) {
                             clampPosition(lp, metrics, defaultMargin, v, captureButton)
@@ -138,7 +161,9 @@ object FloatingCaptureOverlay {
                         return true
                     }
                     MotionEvent.ACTION_CANCEL -> {
+                        cancelLongPress(v)
                         hasMoved = false
+                        longPressTriggered = false
                         return false
                     }
                 }

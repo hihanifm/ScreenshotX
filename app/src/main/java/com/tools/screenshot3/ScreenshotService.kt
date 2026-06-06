@@ -158,19 +158,34 @@ class ScreenshotService : android.app.Service() {
     }
 
     private fun showFloatingControls() {
-        FloatingCaptureOverlay.show(this) {
-            serviceScope.launch {
-                FloatingCaptureOverlay.hide(this@ScreenshotService)
-                delay(OVERLAY_HIDE_DELAY_MS)
+        FloatingCaptureOverlay.show(
+            context = this,
+            onCapture = {
+                serviceScope.launch {
+                    FloatingCaptureOverlay.hide(this@ScreenshotService)
+                    delay(OVERLAY_HIDE_DELAY_MS)
 
-                val requiresConfirmation = ScreenCaptureManager.shouldConfirmBeforeSaving()
-                if (requiresConfirmation) {
-                    handleConfirmationCapture()
-                } else {
-                    handleDirectCapture()
+                    val requiresConfirmation = ScreenCaptureManager.shouldConfirmBeforeSaving()
+                    if (requiresConfirmation) {
+                        handleConfirmationCapture()
+                    } else {
+                        handleDirectCapture()
+                    }
                 }
-            }
+            },
+            onOpenApp = { openMainActivity() }
+        )
+    }
+
+    private fun openMainActivity() {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP
+            )
         }
+        startActivity(intent)
     }
 
     private suspend fun handleConfirmationCapture() {
