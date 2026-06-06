@@ -6,13 +6,14 @@ object ScreenshotFilenameFormatter {
 
     fun buildScreenshotFilename(
         timestamp: Long = System.currentTimeMillis(),
-        appSuffix: String? = null
+        appSuffix: String? = null,
+        format: ScreenshotImageFormat = ScreenshotImageFormat.default
     ): String {
         val sanitizedSuffix = sanitizeFileSegment(appSuffix).ifEmpty { null }
         return if (sanitizedSuffix != null) {
-            "Screenshot_${timestamp}_${sanitizedSuffix}.png"
+            "Screenshot_${timestamp}_${sanitizedSuffix}${format.extension}"
         } else {
-            "Screenshot_${timestamp}.png"
+            "Screenshot_${timestamp}${format.extension}"
         }
     }
 

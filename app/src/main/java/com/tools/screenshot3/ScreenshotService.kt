@@ -164,13 +164,7 @@ class ScreenshotService : android.app.Service() {
                 serviceScope.launch {
                     FloatingCaptureOverlay.hide(this@ScreenshotService)
                     delay(OVERLAY_HIDE_DELAY_MS)
-
-                    val requiresConfirmation = ScreenCaptureManager.shouldConfirmBeforeSaving()
-                    if (requiresConfirmation) {
-                        handleConfirmationCapture()
-                    } else {
-                        handleDirectCapture()
-                    }
+                    handleCapture()
                 }
             },
             onOpenApp = { openMainActivity() }
@@ -188,6 +182,21 @@ class ScreenshotService : android.app.Service() {
         startActivity(intent)
     }
 
+    private suspend fun handleCapture() {
+        val scrollMode = ScreenCaptureManager.isScrollCaptureEnabled() &&
+            ScrollCaptureAccessibilityService.isEnabled(applicationContext)
+        if (scrollMode) {
+            handleScrollCaptureStart()
+            return
+        }
+
+        if (ScreenCaptureManager.shouldConfirmBeforeSaving()) {
+            handleConfirmationCapture()
+        } else {
+            handleDirectCapture()
+        }
+    }
+
     private suspend fun handleConfirmationCapture() {
         val captured = try {
             delay(CAPTURE_STABILIZE_DELAY_MS)
@@ -201,6 +210,24 @@ class ScreenshotService : android.app.Service() {
             Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
             if (ScreenCaptureManager.isReady()) showFloatingControls()
         }
+    }
+
+    private suspend fun handleScrollCaptureStart() {
+        val bitmap = try {
+            delay(CAPTURE_STABILIZE_DELAY_MS)
+            ScreenCaptureManager.captureToBitmap()
+        } catch (_: Throwable) {
+            null
+        }
+
+        if (bitmap == null) {
+            delay(OVERLAY_RESUME_DELAY_MS)
+            Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+            if (ScreenCaptureManager.isReady()) showFloatingControls()
+            return
+        }
+
+        enterScrollCaptureMode(bitmap)
     }
 
     private suspend fun handleDirectCapture() {
@@ -218,27 +245,21 @@ class ScreenshotService : android.app.Service() {
             return
         }
 
-        val scrollMode = ScreenCaptureManager.isScrollCaptureEnabled() &&
-            ScrollCaptureAccessibilityService.isEnabled(applicationContext)
-        if (scrollMode) {
-            enterScrollCaptureMode(bitmap)
+        val uri = withContext(Dispatchers.IO) {
+            ScreenCaptureManager.saveStitchedBitmap(applicationContext, bitmap)
+        }
+        bitmap.recycle()
+        delay(OVERLAY_RESUME_DELAY_MS)
+        if (uri != null) {
+            showFloatingControlsWithSaveChip()
         } else {
-            val uri = withContext(Dispatchers.IO) {
-                ScreenCaptureManager.saveStitchedBitmap(applicationContext, bitmap)
-            }
-            bitmap.recycle()
-            delay(OVERLAY_RESUME_DELAY_MS)
-            if (uri != null) {
-                showFloatingControlsWithSaveChip()
-            } else {
-                Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
-                if (ScreenCaptureManager.isReady()) showFloatingControls()
-            }
+            Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+            if (ScreenCaptureManager.isReady()) showFloatingControls()
         }
     }
 
     private fun enterScrollCaptureMode(initialBitmap: android.graphics.Bitmap) {
-        val session = ScrollCaptureSession(initialBitmap)
+        val session = ScrollCaptureSession(applicationContext, initialBitmap)
         scrollCaptureSession = session
 
         if (ScreenCaptureManager.isReady()) {
@@ -294,15 +315,30 @@ class ScreenshotService : android.app.Service() {
         scrollDoneInProgress = true
         serviceScope.launch {
             FloatingCaptureOverlay.hideScrollToolbar(this@ScreenshotService)
-            val uri = session.saveResult(applicationContext)
             scrollCaptureSession = null
+            val requiresConfirmation = ScreenCaptureManager.shouldConfirmBeforeSaving()
 
-            delay(OVERLAY_RESUME_DELAY_MS)
-            if (uri != null) {
-                showFloatingControlsWithSaveChip()
+            if (requiresConfirmation) {
+                val bitmap = session.takeResultBitmap()
+                val queued = bitmap != null &&
+                    ScreenCaptureManager.queueBitmapForPreview(applicationContext, bitmap)
+                delay(OVERLAY_RESUME_DELAY_MS)
+                if (queued) {
+                    launchPreviewActivity()
+                } else {
+                    bitmap?.recycle()
+                    Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+                    if (ScreenCaptureManager.isReady()) showFloatingControls()
+                }
             } else {
-                Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
-                if (ScreenCaptureManager.isReady()) showFloatingControls()
+                val uri = session.saveResult(applicationContext)
+                delay(OVERLAY_RESUME_DELAY_MS)
+                if (uri != null) {
+                    showFloatingControlsWithSaveChip()
+                } else {
+                    Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+                    if (ScreenCaptureManager.isReady()) showFloatingControls()
+                }
             }
             scrollDoneInProgress = false
         }

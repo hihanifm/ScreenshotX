@@ -30,8 +30,8 @@ class ScrollCaptureAccessibilityService : AccessibilityService() {
     suspend fun scrollDown(viewportHeight: Int, viewportWidth: Int): Boolean =
         suspendCancellableCoroutine { continuation ->
             val centerX = viewportWidth / 2f
-            val startY = viewportHeight * 0.75f
-            val endY = viewportHeight * 0.35f
+            val startY = viewportHeight * SCROLL_START_Y_RATIO
+            val endY = viewportHeight * SCROLL_END_Y_RATIO
 
             val path = Path().apply {
                 moveTo(centerX, startY)
@@ -62,11 +62,18 @@ class ScrollCaptureAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val TAG = "ScrollCaptureA11y"
-        private const val GESTURE_DURATION_MS = 400L
+        // Slower swipe = lower lift velocity = less fling, so the page travels closer to
+        // the finger and the retained overlap stays near the geometry estimate below.
+        private const val GESTURE_DURATION_MS = 700L
+        private const val SCROLL_START_Y_RATIO = 0.75f
+        private const val SCROLL_END_Y_RATIO = 0.35f
 
         @Volatile
         var instance: ScrollCaptureAccessibilityService? = null
             private set
+
+        fun expectedRetainedOverlapRatio(): Float =
+            1f - (SCROLL_START_Y_RATIO - SCROLL_END_Y_RATIO)
 
         fun isEnabled(context: Context): Boolean {
             val enabledServices = Settings.Secure.getString(

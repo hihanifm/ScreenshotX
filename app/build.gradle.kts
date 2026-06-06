@@ -22,14 +22,17 @@ android {
         // Generate version code from build timestamp in format mmddyyhhmm
         val buildTime = SimpleDateFormat("MMddyyHHmm").format(Date())
         versionCode = buildTime.toLong().toInt()
-        versionName = "2.1.1"
+        versionName = "2.1.2"
+        resValue("string", "generated_build_time_millis", System.currentTimeMillis().toString())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -62,6 +65,27 @@ android {
                 val versionCodeSuffix = "_${variant.versionCode}"
                 output.outputFileName = "${nameWithoutExt}${versionNameSuffix}${versionCodeSuffix}.${extension}"
             }
+    }
+}
+
+tasks.register("buildInternalRelease") {
+    group = "distribution"
+    description = "Build the signed, shrunk internal release APK."
+    dependsOn("assembleRelease")
+
+    doLast {
+        val releaseDir = layout.buildDirectory.dir("outputs/apk/release").get().asFile
+        val releaseApk = releaseDir
+            .listFiles()
+            ?.filter { it.isFile && it.extension == "apk" }
+            ?.maxByOrNull { it.lastModified() }
+
+        if (releaseApk != null) {
+            println("Internal release APK: ${releaseApk.absolutePath}")
+            println("Tip: run ./scripts/build-release.sh for size comparison output.")
+        } else {
+            println("Release APK not found in ${releaseDir.absolutePath}")
+        }
     }
 }
 

@@ -9,9 +9,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
-class ScrollCaptureSession(initialBitmap: Bitmap) {
+class ScrollCaptureSession(context: Context, initialBitmap: Bitmap) {
 
-    private var stitchedBitmap: Bitmap? = initialBitmap
+    private val statusBarHeight = getSystemBarHeight(context, "status_bar_height")
+    private val navigationBarHeight = if (ScreenCaptureManager.shouldStripScrollNavBar()) {
+        getSystemBarHeight(context, "navigation_bar_height")
+    } else {
+        0
+    }
+    private val expectedRetainedOverlapRatio =
+        ScrollCaptureAccessibilityService.expectedRetainedOverlapRatio()
+    private var stitchedBitmap: Bitmap? = ImageStitcher.cropBitmap(
+        bitmap = initialBitmap,
+        bottomCrop = navigationBarHeight
+    ).also { cropped ->
+        if (cropped !== initialBitmap) {
+            initialBitmap.recycle()
+        }
+    }
     var scrollCount: Int = 0
         private set
     var isActive: Boolean = true
@@ -33,14 +48,19 @@ class ScrollCaptureSession(initialBitmap: Bitmap) {
         val newFrame = ScreenCaptureManager.captureToBitmap()
             ?: return ScrollResult.Error("Capture failed")
 
-        val statusBarHeight = getStatusBarHeight(context)
         val current = stitchedBitmap ?: run {
             newFrame.recycle()
             return ScrollResult.Error("No existing bitmap")
         }
 
         val result = withContext(Dispatchers.Default) {
-            ImageStitcher.stitch(current, newFrame, statusBarHeight)
+            ImageStitcher.stitch(
+                top = current,
+                bottom = newFrame,
+                statusBarHeight = statusBarHeight,
+                navigationBarHeight = navigationBarHeight,
+                expectedRetainedOverlapRatio = expectedRetainedOverlapRatio
+            )
         }
 
         newFrame.recycle()
@@ -71,6 +91,13 @@ class ScrollCaptureSession(initialBitmap: Bitmap) {
         return uri
     }
 
+    fun takeResultBitmap(): Bitmap? {
+        isActive = false
+        val bitmap = stitchedBitmap ?: return null
+        stitchedBitmap = null
+        return bitmap
+    }
+
     fun cancel() {
         isActive = false
         stitchedBitmap?.recycle()
@@ -78,8 +105,8 @@ class ScrollCaptureSession(initialBitmap: Bitmap) {
         Log.d(TAG, "Session cancelled")
     }
 
-    private fun getStatusBarHeight(context: Context): Int {
-        val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
+    private fun getSystemBarHeight(context: Context, name: String): Int {
+        val resourceId = context.resources.getIdentifier(name, "dimen", "android")
         return if (resourceId > 0) context.resources.getDimensionPixelSize(resourceId) else 0
     }
 

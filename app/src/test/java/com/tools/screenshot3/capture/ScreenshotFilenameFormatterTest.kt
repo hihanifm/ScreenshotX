@@ -26,7 +26,7 @@ class ScreenshotFilenameFormatterTest {
     @Test
     fun buildScreenshotFilename_appendsSuffixWhenAvailable() {
         assertEquals(
-            "Screenshot_1717556400000_amazon.png",
+            "Screenshot_1717556400000_amazon.jpg",
             ScreenshotFilenameFormatter.buildScreenshotFilename(
                 timestamp = 1717556400000L,
                 appSuffix = "Amazon"
@@ -37,10 +37,22 @@ class ScreenshotFilenameFormatterTest {
     @Test
     fun buildScreenshotFilename_fallsBackToTimestampOnly() {
         assertEquals(
-            "Screenshot_1717556400000.png",
+            "Screenshot_1717556400000.jpg",
             ScreenshotFilenameFormatter.buildScreenshotFilename(
                 timestamp = 1717556400000L,
                 appSuffix = "!!!"
+            )
+        )
+    }
+
+    @Test
+    fun buildScreenshotFilename_usesPngWhenRequested() {
+        assertEquals(
+            "Screenshot_1717556400000_amazon.png",
+            ScreenshotFilenameFormatter.buildScreenshotFilename(
+                timestamp = 1717556400000L,
+                appSuffix = "Amazon",
+                format = ScreenshotImageFormat.PNG
             )
         )
     }

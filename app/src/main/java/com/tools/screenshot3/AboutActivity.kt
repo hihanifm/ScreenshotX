@@ -1,7 +1,9 @@
 package com.tools.screenshot3
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.os.Build
+import android.text.format.DateFormat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -28,6 +30,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -46,7 +49,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tools.screenshot3.capture.ScreenCaptureManager
+import com.tools.screenshot3.capture.ScreenshotImageFormat
 import com.tools.screenshot3.ui.theme.Screenshot3Theme
+import java.util.Date
 
 class AboutActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
@@ -55,6 +60,7 @@ class AboutActivity : ComponentActivity() {
     
     override fun onCreate(savedInstanceState: android.os.Bundle?) {
         super.onCreate(savedInstanceState)
+        ScreenCaptureManager.initializeSettings(applicationContext)
         enableEdgeToEdge()
         setContent {
             Screenshot3Theme {
@@ -84,7 +90,10 @@ fun AboutScreen(
     var showSetupHelp by remember { mutableStateOf(false) }
     var showCollectionHelp by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
     val requiresConfirmation by ScreenCaptureManager.requiresConfirmation.collectAsState()
+    val imageFormat by ScreenCaptureManager.imageFormat.collectAsState()
+    val stripScrollNavBar by ScreenCaptureManager.stripScrollNavBar.collectAsState()
     val currentLanguage = LocaleHelper.getSavedLanguage(context)
     val releaseNotesText = remember {
         try {
@@ -99,6 +108,7 @@ fun AboutScreen(
             .fillMaxSize()
             .statusBarsPadding()
             .navigationBarsPadding()
+            .verticalScroll(scrollState)
             .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -168,6 +178,74 @@ fun AboutScreen(
             }
         }
 
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.setting_image_format_title),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = stringResource(R.string.setting_image_format_subtitle),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                ImageFormatOption(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.setting_image_format_jpeg),
+                    selected = imageFormat == ScreenshotImageFormat.JPEG,
+                    onClick = {
+                        ScreenCaptureManager.updateImageFormat(context, ScreenshotImageFormat.JPEG)
+                    }
+                )
+                ImageFormatOption(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.setting_image_format_png),
+                    selected = imageFormat == ScreenshotImageFormat.PNG,
+                    onClick = {
+                        ScreenCaptureManager.updateImageFormat(context, ScreenshotImageFormat.PNG)
+                    }
+                )
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    ScreenCaptureManager.updateStripScrollNavBar(context, !stripScrollNavBar)
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = stripScrollNavBar,
+                onCheckedChange = {
+                    ScreenCaptureManager.updateStripScrollNavBar(context, it)
+                }
+            )
+            Column(
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.setting_strip_scroll_nav_bar_title),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = stringResource(R.string.setting_strip_scroll_nav_bar_subtitle),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
         // Build information
         val packageInfo = try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -187,20 +265,20 @@ fun AboutScreen(
             @Suppress("DEPRECATION")
             (packageInfo?.versionCode ?: 0).toString()
         }
+        val buildType = if ((packageInfo?.applicationInfo?.flags ?: 0) and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            "debug"
+        } else {
+            "release"
+        }
         
-        // Parse build time from version code (MMddyyHHmm format)
+        // Show the actual build timestamp generated at build time in the user's locale.
         val buildTime = try {
-            if (versionCode != "Unknown" && versionCode.length == 10) {
-                val month = versionCode.substring(0, 2)
-                val day = versionCode.substring(2, 4)
-                val year = "20" + versionCode.substring(4, 6)
-                val hour = versionCode.substring(6, 8)
-                val minute = versionCode.substring(8, 10)
-                "$month/$day/$year $hour:$minute"
-            } else {
-                "Unknown"
-            }
-        } catch (e: Exception) {
+            val buildTimeMillis = context.getString(R.string.generated_build_time_millis).toLong()
+            val buildDate = Date(buildTimeMillis)
+            val dateText = DateFormat.getMediumDateFormat(context).format(buildDate)
+            val timeText = DateFormat.getTimeFormat(context).format(buildDate)
+            "$dateText $timeText"
+        } catch (_: Exception) {
             "Unknown"
         }
 
@@ -209,6 +287,10 @@ fun AboutScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.Start
         ) {
+            Text(
+                text = stringResource(R.string.about_build_type, buildType),
+                style = MaterialTheme.typography.bodyMedium
+            )
             Text(
                 text = stringResource(R.string.about_build_time, buildTime),
                 style = MaterialTheme.typography.bodyMedium
@@ -223,8 +305,7 @@ fun AboutScreen(
             )
         }
 
-        // Spacer to push buttons to bottom
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.heightIn(min = 8.dp))
 
         // Feedback button
         Button(
@@ -475,6 +556,28 @@ fun AboutScreen(
                     Text(text = stringResource(R.string.setup_help_close))
                 }
             }
+        )
+    }
+}
+
+@Composable
+private fun ImageFormatOption(
+    modifier: Modifier = Modifier,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = modifier.clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(
+            selected = selected,
+            onClick = onClick
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }
