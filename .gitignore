@@ -29,3 +29,6 @@ local.properties
 
 # Large/local files
 app/files-app-info.txt
+
+# Claude Code local tooling
+.claude/
