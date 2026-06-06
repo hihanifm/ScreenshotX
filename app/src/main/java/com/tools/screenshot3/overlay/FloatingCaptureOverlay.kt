@@ -14,6 +14,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import com.tools.screenshot3.R
 import kotlin.math.abs
@@ -225,6 +226,35 @@ object FloatingCaptureOverlay {
     fun updateScrollToolbarLabel(text: String) {
         val toolbar = toolbarView ?: return
         toolbar.findViewById<TextView>(R.id.toolbarLabel)?.text = text
+    }
+
+    /**
+     * Morphs the toolbar into a confirmation message: removes the tap-to-dismiss
+     * backdrop, hides the action buttons, and centers the message in the bar.
+     */
+    fun showScrollToolbarMessage(message: String) {
+        toolbarBackdropView?.let { bd ->
+            try { toolbarWindowManager?.removeView(bd) } catch (_: IllegalArgumentException) {}
+        }
+        toolbarBackdropView = null
+
+        val toolbar = toolbarView ?: return
+        // Keep the bar's footprint (XML minWidth) and center the message in it.
+        (toolbar as? LinearLayout)?.gravity = Gravity.CENTER
+
+        toolbar.findViewById<ImageButton>(R.id.toolbarScrollMoreButton)?.visibility = View.GONE
+        toolbar.findViewById<ImageButton>(R.id.toolbarDoneButton)?.visibility = View.GONE
+        toolbar.findViewById<TextView>(R.id.toolbarLabel)?.apply {
+            text = message
+            maxWidth = Int.MAX_VALUE
+            gravity = Gravity.CENTER
+            textSize = 20f
+            (layoutParams as? LinearLayout.LayoutParams)?.let { lp ->
+                lp.marginStart = 0
+                lp.marginEnd = 0
+                layoutParams = lp
+            }
+        }
     }
 
     fun hideScrollToolbar(context: Context) {
