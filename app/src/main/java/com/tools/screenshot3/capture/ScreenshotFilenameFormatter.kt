@@ -4,16 +4,21 @@ import java.util.Locale
 
 object ScreenshotFilenameFormatter {
 
+    /** Trailing token marking a stitched scroll capture; parsed back out by [ScreenshotStatsParser]. */
+    const val SCROLL_MARKER = "scroll"
+
     fun buildScreenshotFilename(
         timestamp: Long = System.currentTimeMillis(),
         appSuffix: String? = null,
-        format: ScreenshotImageFormat = ScreenshotImageFormat.default
+        format: ScreenshotImageFormat = ScreenshotImageFormat.default,
+        isScroll: Boolean = false
     ): String {
         val sanitizedSuffix = sanitizeFileSegment(appSuffix).ifEmpty { null }
+        val scrollToken = if (isScroll) "_$SCROLL_MARKER" else ""
         return if (sanitizedSuffix != null) {
-            "Screenshot_${timestamp}_${sanitizedSuffix}${format.extension}"
+            "Screenshot_${timestamp}_${sanitizedSuffix}${scrollToken}${format.extension}"
         } else {
-            "Screenshot_${timestamp}${format.extension}"
+            "Screenshot_${timestamp}${scrollToken}${format.extension}"
         }
     }
 

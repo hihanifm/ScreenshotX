@@ -1989,6 +1989,14 @@ private data class StatGroup(
     val children: List<Pair<String, Int>>
 )
 
+/** One row in the Scroll tab: a category's scroll count out of its total. */
+private data class ScrollCategoryRow(
+    val key: String,
+    val label: String,
+    val scroll: Int,
+    val total: Int
+)
+
 @Composable
 private fun StatsScreen(
     stats: List<ScreenCaptureManager.AppStat>,
@@ -2024,6 +2032,20 @@ private fun StatsScreen(
                 )
             }
         }
+    }
+
+    val scrollRows: List<ScrollCategoryRow> = remember(stats, collectionLabelFor) {
+        ScreenshotStatsParser.invertToCategories(stats)
+            .filter { it.scrollTotal > 0 }
+            .sortedByDescending { it.scrollTotal }
+            .map { category ->
+                ScrollCategoryRow(
+                    key = category.categoryKey,
+                    label = collectionLabelFor(category.categoryKey),
+                    scroll = category.scrollTotal,
+                    total = category.total
+                )
+            }
     }
 
     Dialog(
@@ -2080,6 +2102,14 @@ private fun StatsScreen(
                         },
                         text = { Text(stringResource(R.string.stats_tab_categories)) }
                     )
+                    Tab(
+                        selected = statsTab.value == 2,
+                        onClick = {
+                            statsTab.value = 2
+                            expandedKey.value = null
+                        },
+                        text = { Text(stringResource(R.string.stats_tab_scroll)) }
+                    )
                 }
 
                 when {
@@ -2089,6 +2119,30 @@ private fun StatsScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator()
+                        }
+                    }
+                    statsTab.value == 2 -> {
+                        if (scrollRows.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.stats_scroll_empty),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                items(scrollRows, key = { it.key }) { row ->
+                                    ScrollCategoryCard(row = row)
+                                }
+                            }
                         }
                     }
                     groups.isEmpty() -> {
@@ -2200,6 +2254,78 @@ private fun StatGroupCard(
                 }
                 Spacer(modifier = Modifier.height(8.dp))
             }
+        }
+    }
+}
+
+@Composable
+private fun ScrollCategoryCard(row: ScrollCategoryRow) {
+    val fraction = if (row.total > 0) row.scroll.toFloat() / row.total.toFloat() else 0f
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 2.dp,
+                shape = MaterialTheme.shapes.medium,
+                spotColor = Color(0x0D000000),
+                ambientColor = Color(0x0D000000)
+            ),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = row.label,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = stringResource(R.string.stats_scroll_ratio, row.scroll, row.total),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            ScrollRatioBar(fraction = fraction)
+        }
+    }
+}
+
+@Composable
+private fun ScrollRatioBar(fraction: Float) {
+    val clamped = fraction.coerceIn(0f, 1f)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(8.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(50)
+            )
+    ) {
+        if (clamped > 0f) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(clamped)
+                    .fillMaxHeight()
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(SamsungBlueGradientStart, SamsungBlueGradientEnd)
+                        ),
+                        shape = RoundedCornerShape(50)
+                    )
+            )
         }
     }
 }

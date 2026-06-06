@@ -56,4 +56,28 @@ class ScreenshotFilenameFormatterTest {
             )
         )
     }
+
+    @Test
+    fun buildScreenshotFilename_appendsScrollMarkerWithSuffix() {
+        assertEquals(
+            "Screenshot_1717556400000_amazon_scroll.jpg",
+            ScreenshotFilenameFormatter.buildScreenshotFilename(
+                timestamp = 1717556400000L,
+                appSuffix = "Amazon",
+                isScroll = true
+            )
+        )
+    }
+
+    @Test
+    fun buildScreenshotFilename_appendsScrollMarkerWithoutSuffix() {
+        assertEquals(
+            "Screenshot_1717556400000_scroll.jpg",
+            ScreenshotFilenameFormatter.buildScreenshotFilename(
+                timestamp = 1717556400000L,
+                appSuffix = "!!!",
+                isScroll = true
+            )
+        )
+    }
 }

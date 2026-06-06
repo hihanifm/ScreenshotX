@@ -261,7 +261,7 @@ object ScreenCaptureManager {
         withContext(Dispatchers.IO) {
             val subDirectory = _currentSubdirectory.value
             val appSuffix = ForegroundAppResolver.resolveForegroundAppSuffix(context.applicationContext)
-            val uri = saveBitmap(context, bitmap, subDirectory, appSuffix)
+            val uri = saveBitmap(context, bitmap, subDirectory, appSuffix, isScroll = true)
             if (uri != null) {
                 _captureEvents.value = System.currentTimeMillis()
             }
@@ -375,7 +375,8 @@ object ScreenCaptureManager {
         context: Context,
         bitmap: Bitmap,
         subDirectory: String,
-        appSuffix: String?
+        appSuffix: String?,
+        isScroll: Boolean = false
     ): Uri? {
         val collection = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI
 
@@ -383,7 +384,8 @@ object ScreenCaptureManager {
         val format = currentImageFormat()
         val name = ScreenshotFilenameFormatter.buildScreenshotFilename(
             appSuffix = appSuffix,
-            format = format
+            format = format,
+            isScroll = isScroll
         )
         val values = ContentValues().apply {
             put(android.provider.MediaStore.Images.Media.DISPLAY_NAME, name)
@@ -486,7 +488,9 @@ object ScreenCaptureManager {
         val appKey: String,
         val appLabel: String,
         val total: Int,
-        val byCollection: Map<String, Int>
+        val byCollection: Map<String, Int>,
+        /** Subset of [byCollection] from scroll captures (the rest are regular). */
+        val scrollByCollection: Map<String, Int> = emptyMap()
     )
 
     /**
@@ -507,7 +511,8 @@ object ScreenCaptureManager {
                     ScreenshotStatsParser.titleCase(raw.appKey)
                 },
                 total = raw.total,
-                byCollection = raw.byCollection
+                byCollection = raw.byCollection,
+                scrollByCollection = raw.scrollByCollection
             )
         }
     }

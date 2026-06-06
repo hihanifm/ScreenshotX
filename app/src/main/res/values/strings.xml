@@ -137,4 +137,8 @@
     <string name="stats_back" tools:ignore="MissingTranslation">Back</string>
     <string name="stats_tab_apps" tools:ignore="MissingTranslation">By app</string>
     <string name="stats_tab_categories" tools:ignore="MissingTranslation">By category</string>
+    <string name="stats_tab_scroll" tools:ignore="MissingTranslation">Scroll</string>
+    <string name="stats_scroll_empty" tools:ignore="MissingTranslation">No scroll captures yet</string>
+    <string name="stats_scroll_ratio" tools:ignore="MissingTranslation">%1$d / %2$d scroll</string>
+    <string name="stats_scroll_summary" tools:ignore="MissingTranslation">Regular %1$d · Scroll %2$d</string>
 </resources>

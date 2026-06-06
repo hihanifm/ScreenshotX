@@ -1,7 +1,9 @@
 package com.tools.screenshot3.capture
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ScreenshotStatsParserTest {
@@ -134,5 +136,72 @@ class ScreenshotStatsParserTest {
         val categoriesTotal = ScreenshotStatsParser.invertToCategories(apps).sumOf { it.total }
 
         assertEquals(appsTotal, categoriesTotal)
+    }
+
+    // --- scroll marker ---
+
+    @Test
+    fun isScrollCapture_detectsTrailingMarker() {
+        assertTrue(ScreenshotStatsParser.isScrollCapture("Screenshot_1717556400000_amazon_scroll.jpg"))
+        assertTrue(ScreenshotStatsParser.isScrollCapture("Screenshot_1717556400000_scroll.png"))
+    }
+
+    @Test
+    fun isScrollCapture_falseForRegularAndNonMatching() {
+        assertFalse(ScreenshotStatsParser.isScrollCapture("Screenshot_1717556400000_amazon.jpg"))
+        assertFalse(ScreenshotStatsParser.isScrollCapture("Screenshot_1717556400000.jpg"))
+        assertFalse(ScreenshotStatsParser.isScrollCapture("IMG_20240101.jpg"))
+    }
+
+    @Test
+    fun appKey_stripsScrollMarker() {
+        assertEquals("amazon", ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1_amazon_scroll.jpg"))
+        assertEquals("google_maps", ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1_google_maps_scroll.png"))
+        // bare scroll capture (no app) maps to the Unknown bucket.
+        assertEquals("", ScreenshotStatsParser.appKeyFromDisplayName("Screenshot_1_scroll.jpg"))
+    }
+
+    @Test
+    fun aggregate_populatesScrollByCollection() {
+        val rows = listOf(
+            "Screenshot_1_chrome.jpg" to "Pictures/Screenshot3/movies/",
+            "Screenshot_2_chrome_scroll.jpg" to "Pictures/Screenshot3/movies/",
+            "Screenshot_3_chrome_scroll.jpg" to "Pictures/Screenshot3/shopping/"
+        )
+
+        val chrome = ScreenshotStatsParser.aggregate(rows).first { it.appKey == "chrome" }
+
+        assertEquals(mapOf("movies" to 2, "shopping" to 1), chrome.byCollection)
+        assertEquals(mapOf("movies" to 1, "shopping" to 1), chrome.scrollByCollection)
+    }
+
+    @Test
+    fun invert_carriesScrollTotalPerCategory() {
+        val apps = listOf(
+            ScreenCaptureManager.AppStat(
+                appKey = "chrome",
+                appLabel = "chrome",
+                total = 3,
+                byCollection = mapOf("movies" to 2, "shopping" to 1),
+                scrollByCollection = mapOf("movies" to 1, "shopping" to 1)
+            ),
+            ScreenCaptureManager.AppStat(
+                appKey = "amazon",
+                appLabel = "amazon",
+                total = 1,
+                byCollection = mapOf("movies" to 1),
+                scrollByCollection = mapOf("movies" to 1)
+            )
+        )
+
+        val categories = ScreenshotStatsParser.invertToCategories(apps)
+
+        val movies = categories.first { it.categoryKey == "movies" }
+        assertEquals(3, movies.total)
+        assertEquals(2, movies.scrollTotal)
+
+        val shopping = categories.first { it.categoryKey == "shopping" }
+        assertEquals(1, shopping.total)
+        assertEquals(1, shopping.scrollTotal)
     }
 }
