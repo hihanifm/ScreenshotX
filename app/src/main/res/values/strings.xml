@@ -107,4 +107,14 @@
     <string name="error_collection_empty">Please enter a collection name.</string>
     <string name="error_collection_duplicate">Collection already exists.</string>
     <string name="error_zip_username_empty">Please enter a username.</string>
+    <string name="accessibility_service_description">Enables scroll capture by performing scroll gestures on the current app.</string>
+    <string name="scroll_more_button">Scroll down and capture more</string>
+    <string name="scroll_capture_started">Tap ↓ to scroll &amp; capture more, or ✓ to save</string>
+    <string name="scroll_capture_count">%1$d captures stitched</string>
+    <string name="scroll_capture_limit">Scroll capture limit reached — saving image</string>
+    <string name="scroll_capture_error">Scroll capture error: %1$s</string>
+    <string name="scroll_capture_saved">Scroll capture saved to %1$s (%2$d)</string>
+    <string name="accessibility_help_title">Enable scroll capture</string>
+    <string name="accessibility_help_body">To use scroll capture, enable the Screenshot S accessibility service in Settings → Accessibility → Installed apps.</string>
+    <string name="accessibility_help_open_settings">Open Accessibility Settings</string>
 </resources>

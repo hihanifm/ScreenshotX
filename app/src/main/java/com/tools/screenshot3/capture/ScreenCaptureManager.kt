@@ -206,6 +206,31 @@ private val _requiresConfirmation = MutableStateFlow(false)
             savedUri
         }
 
+    suspend fun captureToBitmap(): Bitmap? = withContext(Dispatchers.IO) {
+        if (!_isSessionActive.value) return@withContext null
+        val reader = imageReader ?: return@withContext null
+        val image = reader.acquireLatestImage() ?: return@withContext null
+        try {
+            image.toBitmap(captureWidth, captureHeight)
+        } catch (t: Throwable) {
+            Log.e(TAG, "SSM-captureToBitmap-error", t)
+            null
+        } finally {
+            image.close()
+        }
+    }
+
+    suspend fun saveStitchedBitmap(context: Context, bitmap: Bitmap): Uri? =
+        withContext(Dispatchers.IO) {
+            val subDirectory = _currentSubdirectory.value
+            val appSuffix = ForegroundAppResolver.resolveForegroundAppSuffix(context.applicationContext)
+            val uri = saveBitmap(context, bitmap, subDirectory, appSuffix)
+            if (uri != null) {
+                _captureEvents.value = System.currentTimeMillis()
+            }
+            uri
+        }
+
     suspend fun persistPendingCapture(context: Context): Uri? {
         val capture = synchronized(this) { pendingCapture } ?: run {
             Log.w(TAG, "SSM-persist-noPending")

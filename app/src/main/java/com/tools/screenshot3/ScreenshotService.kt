@@ -15,6 +15,8 @@ import androidx.core.content.ContextCompat
 import com.tools.screenshot3.capture.ScreenCaptureManager
 import com.tools.screenshot3.overlay.FloatingCaptureOverlay
 import com.tools.screenshot3.preview.CapturePreviewActivity
+import com.tools.screenshot3.scroll.ScrollCaptureAccessibilityService
+import com.tools.screenshot3.scroll.ScrollCaptureSession
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,6 +32,7 @@ class ScreenshotService : android.app.Service() {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var sessionObserverJob: Job? = null
+    private var scrollCaptureSession: ScrollCaptureSession? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -69,6 +72,8 @@ class ScreenshotService : android.app.Service() {
     override fun onDestroy() {
         super.onDestroy()
         sessionObserverJob?.cancel()
+        scrollCaptureSession?.cancel()
+        scrollCaptureSession = null
         serviceScope.cancel()
         FloatingCaptureOverlay.hide(this)
         ScreenCaptureManager.release()
@@ -156,51 +161,144 @@ class ScreenshotService : android.app.Service() {
             serviceScope.launch {
                 FloatingCaptureOverlay.hide(this@ScreenshotService)
                 delay(OVERLAY_HIDE_DELAY_MS)
+
                 val requiresConfirmation = ScreenCaptureManager.shouldConfirmBeforeSaving()
                 if (requiresConfirmation) {
-                    val captured = try {
-                        delay(CAPTURE_STABILIZE_DELAY_MS)
-                        ScreenCaptureManager.captureForPreview(applicationContext)
-                    } finally {
-                        delay(OVERLAY_RESUME_DELAY_MS)
-                    }
-                    if (captured) {
-                        launchPreviewActivity()
-                    } else {
-                        val message = getString(R.string.capture_failed)
-                        Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
-                        if (ScreenCaptureManager.isReady()) {
-                            showFloatingControls()
-                        }
-                    }
+                    handleConfirmationCapture()
                 } else {
-                    val uri = try {
-                        delay(CAPTURE_STABILIZE_DELAY_MS)
-                        ScreenCaptureManager.captureAndStore(applicationContext)
-                    } finally {
-                        delay(OVERLAY_RESUME_DELAY_MS)
-                    }
-                    if (uri != null) {
-                        val folderLabel = resolveFolderLabel()
-                        val currentFolder = ScreenCaptureManager.currentSubdirectory.value
-                        val count = withContext(Dispatchers.IO) {
-                            ScreenCaptureManager.getFolderItemCounts(applicationContext, listOf(currentFolder))[currentFolder] ?: 0
-                        }
-                        if (ScreenCaptureManager.isReady()) {
-                            showFloatingControls()
-                            FloatingCaptureOverlay.showStatus(
-                                getString(R.string.capture_saved_chip, folderLabel, count)
-                            )
-                        }
-                    } else {
-                        val message = getString(R.string.capture_failed)
-                        Toast.makeText(applicationContext, message, Toast.LENGTH_SHORT).show()
-                        if (ScreenCaptureManager.isReady()) {
-                            showFloatingControls()
-                        }
-                    }
+                    handleDirectCapture()
                 }
             }
+        }
+    }
+
+    private suspend fun handleConfirmationCapture() {
+        val captured = try {
+            delay(CAPTURE_STABILIZE_DELAY_MS)
+            ScreenCaptureManager.captureForPreview(applicationContext)
+        } finally {
+            delay(OVERLAY_RESUME_DELAY_MS)
+        }
+        if (captured) {
+            launchPreviewActivity()
+        } else {
+            Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+            if (ScreenCaptureManager.isReady()) showFloatingControls()
+        }
+    }
+
+    private suspend fun handleDirectCapture() {
+        val bitmap = try {
+            delay(CAPTURE_STABILIZE_DELAY_MS)
+            ScreenCaptureManager.captureToBitmap()
+        } catch (_: Throwable) {
+            null
+        }
+
+        if (bitmap == null) {
+            delay(OVERLAY_RESUME_DELAY_MS)
+            Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+            if (ScreenCaptureManager.isReady()) showFloatingControls()
+            return
+        }
+
+        val a11yEnabled = ScrollCaptureAccessibilityService.isEnabled(applicationContext)
+        if (a11yEnabled) {
+            enterScrollCaptureMode(bitmap)
+        } else {
+            val uri = withContext(Dispatchers.IO) {
+                ScreenCaptureManager.saveStitchedBitmap(applicationContext, bitmap)
+            }
+            bitmap.recycle()
+            delay(OVERLAY_RESUME_DELAY_MS)
+            if (uri != null) {
+                showFloatingControlsWithSaveChip()
+            } else {
+                Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+                if (ScreenCaptureManager.isReady()) showFloatingControls()
+            }
+        }
+    }
+
+    private fun enterScrollCaptureMode(initialBitmap: android.graphics.Bitmap) {
+        val session = ScrollCaptureSession(initialBitmap)
+        scrollCaptureSession = session
+
+        if (ScreenCaptureManager.isReady()) {
+            FloatingCaptureOverlay.hide(this)
+            val folderLabel = resolveFolderLabel()
+            FloatingCaptureOverlay.showScrollToolbar(
+                this,
+                folderLabel,
+                onScrollMore = { handleScrollMore(session) },
+                onDone = { handleScrollDone(session) }
+            )
+        }
+    }
+
+    private fun handleScrollMore(session: ScrollCaptureSession) {
+        serviceScope.launch {
+            FloatingCaptureOverlay.hideScrollToolbar(this@ScreenshotService)
+            delay(OVERLAY_HIDE_DELAY_MS)
+            delay(CAPTURE_STABILIZE_DELAY_MS)
+
+            when (val result = session.scrollAndCapture(applicationContext)) {
+                is ScrollCaptureSession.ScrollResult.Success -> {
+                    delay(OVERLAY_RESUME_DELAY_MS)
+                    if (ScreenCaptureManager.isReady()) {
+                        val folderLabel = resolveFolderLabel()
+                        FloatingCaptureOverlay.showScrollToolbar(
+                            this@ScreenshotService,
+                            folderLabel,
+                            onScrollMore = { handleScrollMore(session) },
+                            onDone = { handleScrollDone(session) }
+                        )
+                        FloatingCaptureOverlay.updateScrollToolbarLabel(
+                            getString(R.string.scroll_capture_count, result.totalScrolls + 1)
+                        )
+                    }
+                }
+                is ScrollCaptureSession.ScrollResult.LimitReached -> {
+                    delay(OVERLAY_RESUME_DELAY_MS)
+                    Toast.makeText(applicationContext, getString(R.string.scroll_capture_limit), Toast.LENGTH_SHORT).show()
+                    handleScrollDone(session)
+                }
+                is ScrollCaptureSession.ScrollResult.Error -> {
+                    delay(OVERLAY_RESUME_DELAY_MS)
+                    Toast.makeText(applicationContext, getString(R.string.scroll_capture_error, result.message), Toast.LENGTH_SHORT).show()
+                    handleScrollDone(session)
+                }
+            }
+        }
+    }
+
+    private fun handleScrollDone(session: ScrollCaptureSession) {
+        serviceScope.launch {
+            FloatingCaptureOverlay.hideScrollToolbar(this@ScreenshotService)
+            val uri = session.saveResult(applicationContext)
+            scrollCaptureSession = null
+
+            delay(OVERLAY_RESUME_DELAY_MS)
+            if (uri != null) {
+                showFloatingControlsWithSaveChip()
+            } else {
+                Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+                if (ScreenCaptureManager.isReady()) showFloatingControls()
+            }
+        }
+    }
+
+    private suspend fun showFloatingControlsWithSaveChip() {
+        val folderLabel = resolveFolderLabel()
+        val currentFolder = ScreenCaptureManager.currentSubdirectory.value
+        val count = withContext(Dispatchers.IO) {
+            ScreenCaptureManager.getFolderItemCounts(applicationContext, listOf(currentFolder))[currentFolder] ?: 0
+        }
+        if (ScreenCaptureManager.isReady()) {
+            showFloatingControls()
+            FloatingCaptureOverlay.showStatus(
+                getString(R.string.capture_saved_chip, folderLabel, count)
+            )
         }
     }
 

@@ -91,6 +91,7 @@ import com.tools.screenshot3.ui.theme.SamsungTextTertiary
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.tools.screenshot3.capture.ForegroundAppResolver
+import com.tools.screenshot3.scroll.ScrollCaptureAccessibilityService
 import com.tools.screenshot3.capture.ScreenCaptureManager
 import com.tools.screenshot3.data.CollectionRepository
 import com.tools.screenshot3.ui.theme.Screenshot3Theme
@@ -117,6 +118,7 @@ class MainActivity : ComponentActivity() {
     private val showUsageAccessHelp = mutableStateOf(false)
     private val hasUsageAccess = mutableStateOf(false)
     private val pendingCaptureAfterUsageAccess = mutableStateOf(false)
+    private val hasAccessibilityService = mutableStateOf(false)
 
     private val mediaProjectionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -176,6 +178,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         refreshUsageAccessState()
+        hasAccessibilityService.value = ScrollCaptureAccessibilityService.isEnabled(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -230,6 +233,10 @@ class MainActivity : ComponentActivity() {
                         onOpenOverlayPermissionSettings = {
                             showOverlayPermissionHelp.value = false
                             requestOverlayPermission()
+                        },
+                        hasAccessibilityService = hasAccessibilityService.value,
+                        onOpenAccessibilitySettings = {
+                            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
                         }
                     )
                 }
@@ -621,6 +628,8 @@ fun MainScreen(
     showOverlayPermissionHelp: Boolean = false,
     onDismissOverlayPermissionHelp: () -> Unit = {},
     onOpenOverlayPermissionSettings: () -> Unit = {},
+    hasAccessibilityService: Boolean = true,
+    onOpenAccessibilitySettings: () -> Unit = {},
     contentPadding: PaddingValues = PaddingValues()
 ) {
     val scope = rememberCoroutineScope()
@@ -922,6 +931,33 @@ fun MainScreen(
                                         )
                                         TextButton(onClick = onOpenUsageAccessSettings) {
                                             Text(text = stringResource(R.string.usage_access_open_settings))
+                                        }
+                                    }
+                                }
+                            }
+                            if (!hasAccessibilityService) {
+                                Surface(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    tonalElevation = 2.dp,
+                                    shape = MaterialTheme.shapes.medium,
+                                    color = SamsungBlueSubtle
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(14.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.accessibility_help_title),
+                                            style = MaterialTheme.typography.titleSmall,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.accessibility_help_body),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        TextButton(onClick = onOpenAccessibilitySettings) {
+                                            Text(text = stringResource(R.string.accessibility_help_open_settings))
                                         }
                                     }
                                 }

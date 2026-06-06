@@ -13,6 +13,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
+import android.widget.ImageButton
 import android.widget.TextView
 import com.tools.screenshot3.R
 import kotlin.math.abs
@@ -26,6 +27,11 @@ object FloatingCaptureOverlay {
     private var overlayView: View? = null
     private var layoutParams: WindowManager.LayoutParams? = null
     private var hideStatusRunnable: Runnable? = null
+
+    // Scroll toolbar state (separate overlay)
+    private var toolbarView: View? = null
+    private var toolbarBackdropView: View? = null
+    private var toolbarWindowManager: WindowManager? = null
 
     fun show(
         context: Context,
@@ -77,7 +83,8 @@ object FloatingCaptureOverlay {
 
         layoutParams = params
         overlayView = view
-        val captureButton = view.findViewById<View>(R.id.overlayCaptureButton).apply {
+
+        val captureButton = view.findViewById<ImageButton>(R.id.overlayCaptureButton).apply {
             setOnClickListener { onCapture() }
         }
 
@@ -119,7 +126,7 @@ object FloatingCaptureOverlay {
                     MotionEvent.ACTION_UP -> {
                         val elapsed = event.eventTime - downTime
                         if (!hasMoved && elapsed < CLICK_MAX_DURATION_MS) {
-                            captureButton.performClick()
+                            v.performClick()
                         } else if (hasMoved) {
                             clampPosition(lp, metrics, defaultMargin, v, captureButton)
                             windowManager?.updateViewLayout(view, lp)
@@ -142,6 +149,98 @@ object FloatingCaptureOverlay {
 
         wm.addView(view, params)
     }
+
+    // ---- Scroll toolbar (bottom bar) ----
+
+    fun showScrollToolbar(
+        context: Context,
+        folderLabel: String,
+        onScrollMore: () -> Unit,
+        onDone: () -> Unit
+    ) {
+        hideScrollToolbar(context)
+
+        val appContext = context.applicationContext
+        val wm = appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        toolbarWindowManager = wm
+
+        val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        } else {
+            @Suppress("DEPRECATION")
+            WindowManager.LayoutParams.TYPE_PHONE
+        }
+
+        // Full-screen transparent backdrop — tap anywhere triggers done
+        val backdrop = View(appContext)
+        backdrop.setOnClickListener { onDone() }
+        val backdropParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            WindowManager.LayoutParams.MATCH_PARENT,
+            overlayType,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        )
+        toolbarBackdropView = backdrop
+        wm.addView(backdrop, backdropParams)
+
+        // Toolbar bar at bottom
+        val inflater = LayoutInflater.from(appContext)
+        val toolbar = inflater.inflate(R.layout.overlay_scroll_toolbar, null)
+
+        val navBarHeight = getNavBarHeight(appContext)
+        val bottomMargin = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            16f,
+            appContext.resources.displayMetrics
+        ).roundToInt() + navBarHeight
+
+        val toolbarParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            overlayType,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            y = bottomMargin
+        }
+
+        val label = toolbar.findViewById<TextView>(R.id.toolbarLabel)
+        label.text = folderLabel
+
+        toolbar.findViewById<ImageButton>(R.id.toolbarScrollMoreButton).setOnClickListener {
+            onScrollMore()
+        }
+        toolbar.findViewById<ImageButton>(R.id.toolbarDoneButton).setOnClickListener {
+            onDone()
+        }
+
+        toolbarView = toolbar
+        wm.addView(toolbar, toolbarParams)
+    }
+
+    fun updateScrollToolbarLabel(text: String) {
+        val toolbar = toolbarView ?: return
+        toolbar.findViewById<TextView>(R.id.toolbarLabel)?.text = text
+    }
+
+    fun hideScrollToolbar(context: Context) {
+        val wm = toolbarWindowManager ?: return
+        toolbarView?.let {
+            try { wm.removeView(it) } catch (_: IllegalArgumentException) {}
+        }
+        toolbarBackdropView?.let {
+            try { wm.removeView(it) } catch (_: IllegalArgumentException) {}
+        }
+        toolbarView = null
+        toolbarBackdropView = null
+        toolbarWindowManager = null
+    }
+
+    // ---- Status chip on capture overlay ----
 
     fun showStatus(message: String) {
         val view = overlayView ?: return
@@ -169,82 +268,55 @@ object FloatingCaptureOverlay {
         hideStatusRunnable = hideRunnable
         chip.postDelayed(hideRunnable, STATUS_VISIBLE_DURATION_MS)
     }
-    
+
     fun jiggleButton() {
-        android.util.Log.d("SSM-FloatingOverlay", "jiggleButton() public function called, overlayView: $overlayView")
-        val view = overlayView ?: run {
-            android.util.Log.w("SSM-FloatingOverlay", "overlayView is null")
-            return
-        }
-        
-        // Try to animate the button, but if not found, animate the parent view
+        val view = overlayView ?: return
         val button = view.findViewById<View>(R.id.overlayCaptureButton)
         val targetView = button ?: view
-        
-        android.util.Log.d("SSM-FloatingOverlay", "Target view for animation: $targetView (button: $button, view: $view)")
-        
-        // Wait for the view to be laid out before animating
+
         if (targetView.width > 0 && targetView.height > 0) {
-            // View is already laid out, animate immediately
-            targetView.post {
-                jiggleButton(targetView)
-            }
+            targetView.post { jiggleButton(targetView) }
         } else {
-            // Wait for layout to complete
             val observer = targetView.viewTreeObserver
             observer.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     targetView.viewTreeObserver.removeOnGlobalLayoutListener(this)
-                    android.util.Log.d("SSM-FloatingOverlay", "View laid out, starting animation")
-                    targetView.post {
-                        jiggleButton(targetView)
-                    }
+                    targetView.post { jiggleButton(targetView) }
                 }
             })
         }
     }
-    
+
     private fun jiggleButton(button: View) {
-        android.util.Log.d("SSM-FloatingOverlay", "jiggleButton called, button: $button, width: ${button.width}, height: ${button.height}")
-        
-        // Ensure pivot point is at center for rotation
-        val width = if (button.width > 0) button.width else 72 // fallback to 72dp
+        val width = if (button.width > 0) button.width else 72
         val height = if (button.height > 0) button.height else 72
         button.pivotX = width / 2f
         button.pivotY = height / 2f
-        
-        android.util.Log.d("SSM-FloatingOverlay", "Pivot set: x=${button.pivotX}, y=${button.pivotY}")
-        
-        // Create a more aggressive and visible jiggle animation
-        // Use larger rotation angles and combine with scale for maximum visibility
+
         val rotationValues = floatArrayOf(0f, -12f, 12f, -8f, 8f, -4f, 4f, 0f)
         val scaleValues = floatArrayOf(1f, 1.1f, 0.95f, 1.05f, 0.98f, 1.02f, 1f)
-        
+
         val rotationAnimator = ObjectAnimator.ofFloat(button, "rotation", *rotationValues).apply {
             duration = 500
-            repeatCount = 1 // Play twice (initial + 1 repeat)
+            repeatCount = 1
         }
-        
         val scaleXAnimator = ObjectAnimator.ofFloat(button, "scaleX", *scaleValues).apply {
             duration = 500
-            repeatCount = 1 // Play twice (initial + 1 repeat)
+            repeatCount = 1
         }
-        
         val scaleYAnimator = ObjectAnimator.ofFloat(button, "scaleY", *scaleValues).apply {
             duration = 500
-            repeatCount = 1 // Play twice (initial + 1 repeat)
+            repeatCount = 1
         }
-        
-        val animatorSet = AnimatorSet().apply {
+
+        AnimatorSet().apply {
             playTogether(rotationAnimator, scaleXAnimator, scaleYAnimator)
             interpolator = AccelerateDecelerateInterpolator()
-        }
-        
-        android.util.Log.d("SSM-FloatingOverlay", "Starting animation with ${rotationValues.size} rotation steps (will play twice)")
-        animatorSet.start()
+        }.start()
     }
 
     fun hide(context: Context) {
+        hideScrollToolbar(context)
         val wm = windowManager ?: return
         val view = overlayView ?: return
         view.findViewById<TextView>(R.id.overlayStatusChip).let { chip ->
@@ -300,5 +372,10 @@ object FloatingCaptureOverlay {
             .putInt(KEY_OVERLAY_X, x)
             .putInt(KEY_OVERLAY_Y, y)
             .apply()
+    }
+
+    private fun getNavBarHeight(context: Context): Int {
+        val resourceId = context.resources.getIdentifier("navigation_bar_height", "dimen", "android")
+        return if (resourceId > 0) context.resources.getDimensionPixelSize(resourceId) else 0
     }
 }
