@@ -303,7 +303,7 @@ fun AboutScreen(
                 context.startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse("https://hihanifm.github.io/ScreenshotX/user-guide.html")
+                        Uri.parse("https://hihanifm.github.io/ScreenshotX/docs/user-guide.html")
                     )
                 )
             },
