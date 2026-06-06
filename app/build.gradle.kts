@@ -68,6 +68,27 @@ android {
     }
 }
 
+tasks.register("buildInternalRelease") {
+    group = "distribution"
+    description = "Build the signed, shrunk internal release APK."
+    dependsOn("assembleRelease")
+
+    doLast {
+        val releaseDir = layout.buildDirectory.dir("outputs/apk/release").get().asFile
+        val releaseApk = releaseDir
+            .listFiles()
+            ?.filter { it.isFile && it.extension == "apk" }
+            ?.maxByOrNull { it.lastModified() }
+
+        if (releaseApk != null) {
+            println("Internal release APK: ${releaseApk.absolutePath}")
+            println("Tip: run ./scripts/build-release.sh for size comparison output.")
+        } else {
+            println("Release APK not found in ${releaseDir.absolutePath}")
+        }
+    }
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
