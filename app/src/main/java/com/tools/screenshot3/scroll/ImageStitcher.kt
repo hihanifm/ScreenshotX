@@ -13,8 +13,9 @@ object ImageStitcher {
     private const val TAG = "ImageStitcher"
     private const val MAX_STITCHED_HEIGHT = 20000
     private const val DEFAULT_EXPECTED_RETAINED_OVERLAP_RATIO = 0.60f
-    private const val SEARCH_WINDOW_RATIO = 0.12f
-    private const val ROW_SAMPLE_COUNT = 12
+    private const val SEARCH_MIN_RATIO = 0.12f
+    private const val SEARCH_MAX_RATIO = 0.85f
+    private const val ROW_SAMPLE_COUNT = 24
     private const val ROW_EDGE_TRIM_RATIO = 0.12f
     private const val MATCH_BOTTOM_EXCLUSION_RATIO = 0.28f
     private const val SCORE_RELATIVE_TOLERANCE = 0.12
@@ -59,12 +60,12 @@ object ImageStitcher {
         expectedRetainedOverlapRatio: Float = DEFAULT_EXPECTED_RETAINED_OVERLAP_RATIO
     ): StitchResult {
         val safeExpectedOverlapRatio = expectedRetainedOverlapRatio.coerceIn(0.05f, 0.90f)
-        val searchMin = (
-            top.height * (safeExpectedOverlapRatio - SEARCH_WINDOW_RATIO).coerceAtLeast(0.05f)
-        ).roundToInt()
-        val searchMax = (
-            top.height * (safeExpectedOverlapRatio + SEARCH_WINDOW_RATIO).coerceAtMost(0.90f)
-        ).roundToInt()
+        // Fling makes the page travel further than the finger, so the true overlap is usually
+        // smaller than the gesture-derived estimate. Search a wide band rather than a narrow
+        // window around the estimate, so the real seam is always in range; the estimate only
+        // biases tie-breaks via the large-overlap penalty in scoreOverlapCandidates.
+        val searchMin = (top.height * SEARCH_MIN_RATIO).roundToInt().coerceAtLeast(1)
+        val searchMax = (top.height * SEARCH_MAX_RATIO).roundToInt().coerceAtLeast(searchMin + 1)
         val bottomBounds = computeContentBounds(
             height = bottom.height,
             topCrop = statusBarHeight,
@@ -144,8 +145,10 @@ object ImageStitcher {
         bottomBounds: VerticalBounds,
         expectedRetainedOverlapRatio: Float
     ): OverlapDecision {
-        val candidates = scoreOverlapCandidates(top, bottom, searchMin, searchMax, bottomBounds)
         val expectedOverlapRows = (top.height * expectedRetainedOverlapRatio).roundToInt()
+        val candidates = scoreOverlapCandidates(
+            top, bottom, searchMin, searchMax, bottomBounds, expectedOverlapRows
+        )
         return chooseOverlap(candidates, expectedOverlapRows)
     }
 
@@ -197,12 +200,12 @@ object ImageStitcher {
         bottom: Bitmap,
         searchMin: Int,
         searchMax: Int,
-        bottomBounds: VerticalBounds
+        bottomBounds: VerticalBounds,
+        expectedOverlapRows: Int
     ): List<OverlapCandidate> {
         val width = min(top.width, bottom.width)
         val sampleStep = max(2, width / 48)
         val candidates = mutableListOf<OverlapCandidate>()
-        val expectedOverlap = ((searchMin + searchMax) / 2f).roundToInt()
 
         for (overlap in searchMin..min(searchMax, min(top.height, bottomBounds.height))) {
             val innerTrim = (overlap * ROW_EDGE_TRIM_RATIO).roundToInt()
@@ -239,7 +242,10 @@ object ImageStitcher {
 
             if (sampleCount == 0) continue
             val averageDifference = totalSad / sampleCount
-            val overlapPenalty = max(overlap - expectedOverlap, 0) * LARGE_OVERLAP_PENALTY_PER_ROW
+            // Fling only ever shrinks overlap below the geometry estimate; an overlap larger
+            // than expected is physically implausible (only legitimate at end-of-page), so
+            // nudge against it to break ties toward the plausible, smaller-overlap region.
+            val overlapPenalty = max(overlap - expectedOverlapRows, 0) * LARGE_OVERLAP_PENALTY_PER_ROW
             candidates.add(
                 OverlapCandidate(
                     overlapRows = overlap,

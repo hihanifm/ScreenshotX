@@ -62,7 +62,9 @@ class ScrollCaptureAccessibilityService : AccessibilityService() {
 
     companion object {
         private const val TAG = "ScrollCaptureA11y"
-        private const val GESTURE_DURATION_MS = 400L
+        // Slower swipe = lower lift velocity = less fling, so the page travels closer to
+        // the finger and the retained overlap stays near the geometry estimate below.
+        private const val GESTURE_DURATION_MS = 700L
         private const val SCROLL_START_Y_RATIO = 0.75f
         private const val SCROLL_END_Y_RATIO = 0.35f
 

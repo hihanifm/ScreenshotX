@@ -56,6 +56,41 @@ class ImageStitcherTest {
     }
 
     @Test
+    fun chooseOverlap_picksClearlyBetterSmallOverlapOverLargerCandidates() {
+        // The fling case: the true seam sits at a small overlap (far below the old ~48%
+        // window floor) and matches cleanly, while larger overlaps score poorly. The small,
+        // clearly-better candidate must win so fresh content is not skipped.
+        val decision = ImageStitcher.chooseOverlap(
+            candidates = listOf(
+                ImageStitcher.OverlapCandidate(overlapRows = 30, averageDifference = 8.0),
+                ImageStitcher.OverlapCandidate(overlapRows = 48, averageDifference = 95.0),
+                ImageStitcher.OverlapCandidate(overlapRows = 60, averageDifference = 120.0)
+            ),
+            expectedOverlapRows = 60
+        )
+
+        assertEquals(30, decision.chosenOverlapRows)
+        assertFalse(decision.usedConservativeFallback)
+        assertTrue(decision.confidenceScore > 0.10f)
+    }
+
+    @Test
+    fun chooseOverlap_prefersSmallerOverlapWhenScoresAreNearlyTied() {
+        // Near-equal scores => low confidence => bias toward the smaller overlap, which
+        // duplicates a thin sliver rather than dropping content.
+        val decision = ImageStitcher.chooseOverlap(
+            candidates = listOf(
+                ImageStitcher.OverlapCandidate(overlapRows = 70, averageDifference = 40.0),
+                ImageStitcher.OverlapCandidate(overlapRows = 32, averageDifference = 41.0)
+            ),
+            expectedOverlapRows = 60
+        )
+
+        assertEquals(32, decision.chosenOverlapRows)
+        assertTrue(decision.usedConservativeFallback)
+    }
+
+    @Test
     fun chooseOverlap_keepsBestCandidateWhenConfidenceIsGood() {
         val decision = ImageStitcher.chooseOverlap(
             candidates = listOf(
