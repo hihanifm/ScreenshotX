@@ -23,13 +23,16 @@ android {
         val buildTime = SimpleDateFormat("MMddyyHHmm").format(Date())
         versionCode = buildTime.toLong().toInt()
         versionName = "2.1.1"
+        resValue("string", "generated_build_time_millis", System.currentTimeMillis().toString())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

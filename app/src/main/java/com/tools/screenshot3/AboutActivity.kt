@@ -1,7 +1,9 @@
 package com.tools.screenshot3
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.os.Build
+import android.text.format.DateFormat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -49,6 +51,7 @@ import androidx.compose.ui.unit.dp
 import com.tools.screenshot3.capture.ScreenCaptureManager
 import com.tools.screenshot3.capture.ScreenshotImageFormat
 import com.tools.screenshot3.ui.theme.Screenshot3Theme
+import java.util.Date
 
 class AboutActivity : ComponentActivity() {
     override fun attachBaseContext(newBase: Context) {
@@ -227,20 +230,20 @@ fun AboutScreen(
             @Suppress("DEPRECATION")
             (packageInfo?.versionCode ?: 0).toString()
         }
+        val buildType = if ((packageInfo?.applicationInfo?.flags ?: 0) and ApplicationInfo.FLAG_DEBUGGABLE != 0) {
+            "debug"
+        } else {
+            "release"
+        }
         
-        // Parse build time from version code (MMddyyHHmm format)
+        // Show the actual build timestamp generated at build time in the user's locale.
         val buildTime = try {
-            if (versionCode != "Unknown" && versionCode.length == 10) {
-                val month = versionCode.substring(0, 2)
-                val day = versionCode.substring(2, 4)
-                val year = "20" + versionCode.substring(4, 6)
-                val hour = versionCode.substring(6, 8)
-                val minute = versionCode.substring(8, 10)
-                "$month/$day/$year $hour:$minute"
-            } else {
-                "Unknown"
-            }
-        } catch (e: Exception) {
+            val buildTimeMillis = context.getString(R.string.generated_build_time_millis).toLong()
+            val buildDate = Date(buildTimeMillis)
+            val dateText = DateFormat.getMediumDateFormat(context).format(buildDate)
+            val timeText = DateFormat.getTimeFormat(context).format(buildDate)
+            "$dateText $timeText"
+        } catch (_: Exception) {
             "Unknown"
         }
 
@@ -249,6 +252,10 @@ fun AboutScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.Start
         ) {
+            Text(
+                text = stringResource(R.string.about_build_type, buildType),
+                style = MaterialTheme.typography.bodyMedium
+            )
             Text(
                 text = stringResource(R.string.about_build_time, buildTime),
                 style = MaterialTheme.typography.bodyMedium

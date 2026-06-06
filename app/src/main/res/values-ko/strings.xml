@@ -95,6 +95,7 @@
     <string name="button_how_to_collect">스크린샷 수집 방법</string>
     <string name="button_language">언어: %1$s</string>
     <string name="language_dialog_title">언어 선택</string>
+    <string name="about_build_type">빌드 유형: %1$s</string>
     <string name="about_build_time">빌드 시간: %1$s</string>
     <string name="about_version_code">버전 코드: %1$s</string>
     <string name="about_version_name">버전 이름: %1$s</string>

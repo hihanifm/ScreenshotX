@@ -95,6 +95,7 @@
     <string name="button_how_to_collect">How To Collect Screenshots</string>
     <string name="button_language">Language: %1$s</string>
     <string name="language_dialog_title">Select Language</string>
+    <string name="about_build_type" tools:ignore="MissingTranslation">Build type: %1$s</string>
     <string name="about_build_time" tools:ignore="MissingTranslation">Build time: %1$s</string>
     <string name="about_version_code" tools:ignore="MissingTranslation">Version code: %1$s</string>
     <string name="about_version_name" tools:ignore="MissingTranslation">Version name: %1$s</string>

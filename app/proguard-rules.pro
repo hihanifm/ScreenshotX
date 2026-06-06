@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Keep manifest-declared app entry points stable under shrinking/obfuscation.
+-keep class com.tools.screenshot3.MainActivity
+-keep class com.tools.screenshot3.preview.CapturePreviewActivity
+-keep class com.tools.screenshot3.AboutActivity
+-keep class com.tools.screenshot3.CollectionGuideActivity
+-keep class com.tools.screenshot3.ScreenshotService
+-keep class com.tools.screenshot3.scroll.ScrollCaptureAccessibilityService
