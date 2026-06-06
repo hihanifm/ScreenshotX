@@ -441,7 +441,10 @@ fun AboutScreen(
             },
             text = {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 480.dp)
+                        .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     LocaleHelper.getAvailableLanguages().forEach { language ->
@@ -475,4 +478,3 @@ fun AboutScreen(
         )
     }
 }
-
