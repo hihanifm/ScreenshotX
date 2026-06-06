@@ -65,7 +65,7 @@ draft_args=()
 gh release create "$tag" \
   "${release_apk}#Screenshot3 ${tag} (APK)" \
   --title "Screenshot3 ${tag}" \
-  "${draft_args[@]}" \
+  ${draft_args[@]+"${draft_args[@]}"} \
   "${notes_args[@]}"
 
 echo "Done: $(gh release view "$tag" --json url -q .url)"
