@@ -279,12 +279,11 @@ class ScreenshotService : android.app.Service() {
             scrollCaptureSession = null
 
             delay(OVERLAY_RESUME_DELAY_MS)
-            if (uri != null) {
-                showFloatingControlsWithSaveChip()
-            } else {
+            if (uri == null) {
                 Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
-                if (ScreenCaptureManager.isReady()) showFloatingControls()
             }
+            // Toolbar already showed the category, so no save chip here.
+            if (ScreenCaptureManager.isReady()) showFloatingControls()
         }
     }
 
