@@ -73,6 +73,8 @@
     <string name="capture_preview_content_description">스크린샷 미리보기</string>
     <string name="setting_require_confirmation_title">저장 전 확인</string>
     <string name="setting_require_confirmation_subtitle">캡처된 이미지를 표시하고 저장할지 선택합니다.</string>
+    <string name="setting_scroll_capture_title">스크롤 캡처</string>
+    <string name="setting_scroll_capture_subtitle">캡처할 때마다 긴 페이지를 스크롤하여 이어 붙입니다 (접근성 필요).</string>
     <string name="usage_access_title">앱 이름 파일명 사용</string>
     <string name="usage_access_body">Usage Access를 허용하면 저장되는 스크린샷 파일명에 Amazon이나 Chrome 같은 현재 앱 이름을 붙일 수 있습니다.</string>
     <string name="usage_access_open_settings">Usage Access 허용</string>

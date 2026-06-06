@@ -193,6 +193,7 @@ class MainActivity : ComponentActivity() {
                     val captureActive by ScreenCaptureManager.isSessionActive.collectAsState()
                     val selectedFolder by ScreenCaptureManager.currentSubdirectory.collectAsState()
                     val requiresConfirmation by ScreenCaptureManager.requiresConfirmation.collectAsState()
+                    val scrollCaptureEnabled by ScreenCaptureManager.scrollCaptureEnabled.collectAsState()
                     MainScreen(
                         isCaptureReady = captureActive,
                         selectedFolder = selectedFolder,
@@ -237,6 +238,10 @@ class MainActivity : ComponentActivity() {
                         hasAccessibilityService = hasAccessibilityService.value,
                         onOpenAccessibilitySettings = {
                             startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+                        },
+                        scrollCaptureEnabled = scrollCaptureEnabled,
+                        onScrollCaptureChanged = {
+                            ScreenCaptureManager.updateScrollCaptureEnabled(applicationContext, it)
                         }
                     )
                 }
@@ -630,6 +635,8 @@ fun MainScreen(
     onOpenOverlayPermissionSettings: () -> Unit = {},
     hasAccessibilityService: Boolean = true,
     onOpenAccessibilitySettings: () -> Unit = {},
+    scrollCaptureEnabled: Boolean = false,
+    onScrollCaptureChanged: (Boolean) -> Unit = {},
     contentPadding: PaddingValues = PaddingValues()
 ) {
     val scope = rememberCoroutineScope()
@@ -908,6 +915,33 @@ fun MainScreen(
                                 fontWeight = FontWeight.Medium,
                                 color = if (isCaptureReady) SamsungGreen else MaterialTheme.colorScheme.onSurfaceVariant
                             )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onScrollCaptureChanged(!scrollCaptureEnabled) },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = scrollCaptureEnabled,
+                                    onCheckedChange = { onScrollCaptureChanged(it) }
+                                )
+                                Column(
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
+                                        .weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.setting_scroll_capture_title),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.setting_scroll_capture_subtitle),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
                             if (!hasUsageAccess) {
                                 Surface(
                                     modifier = Modifier.fillMaxWidth(),
@@ -935,7 +969,7 @@ fun MainScreen(
                                     }
                                 }
                             }
-                            if (!hasAccessibilityService) {
+                            if (scrollCaptureEnabled && !hasAccessibilityService) {
                                 Surface(
                                     modifier = Modifier.fillMaxWidth(),
                                     tonalElevation = 2.dp,

@@ -142,7 +142,6 @@ class ScreenshotService : android.app.Service() {
         private const val OVERLAY_HIDE_DELAY_MS = 300L
         private const val CAPTURE_STABILIZE_DELAY_MS = 120L
         private const val OVERLAY_RESUME_DELAY_MS = 200L
-        private const val SAVED_MESSAGE_DURATION_MS = 1000L
 
         fun start(context: Context, resultCode: Int, data: Intent) {
             val intent = Intent(context, ScreenshotService::class.java).apply {
@@ -204,8 +203,9 @@ class ScreenshotService : android.app.Service() {
             return
         }
 
-        val a11yEnabled = ScrollCaptureAccessibilityService.isEnabled(applicationContext)
-        if (a11yEnabled) {
+        val scrollMode = ScreenCaptureManager.isScrollCaptureEnabled() &&
+            ScrollCaptureAccessibilityService.isEnabled(applicationContext)
+        if (scrollMode) {
             enterScrollCaptureMode(bitmap)
         } else {
             val uri = withContext(Dispatchers.IO) {
@@ -278,31 +278,22 @@ class ScreenshotService : android.app.Service() {
         if (scrollDoneInProgress) return
         scrollDoneInProgress = true
         serviceScope.launch {
+            FloatingCaptureOverlay.hideScrollToolbar(this@ScreenshotService)
             val uri = session.saveResult(applicationContext)
             scrollCaptureSession = null
 
+            delay(OVERLAY_RESUME_DELAY_MS)
             if (uri != null) {
-                // Reuse the toolbar to show the saved-in confirmation, then dismiss.
-                val folderLabel = resolveFolderLabel()
-                val currentFolder = ScreenCaptureManager.currentSubdirectory.value
-                val count = withContext(Dispatchers.IO) {
-                    ScreenCaptureManager.getFolderItemCounts(applicationContext, listOf(currentFolder))[currentFolder] ?: 0
-                }
-                FloatingCaptureOverlay.showScrollToolbarMessage(
-                    getString(R.string.capture_saved_chip, folderLabel, count)
-                )
-                delay(SAVED_MESSAGE_DURATION_MS)
+                showFloatingControlsWithSaveChip()
             } else {
                 Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+                if (ScreenCaptureManager.isReady()) showFloatingControls()
             }
-
-            FloatingCaptureOverlay.hideScrollToolbar(this@ScreenshotService)
-            delay(OVERLAY_RESUME_DELAY_MS)
-            if (ScreenCaptureManager.isReady()) showFloatingControls()
             scrollDoneInProgress = false
         }
     }
 
+    /** Restores the floating button and shows the consistent bottom "Saved in {category}" bar. */
     private suspend fun showFloatingControlsWithSaveChip() {
         val folderLabel = resolveFolderLabel()
         val currentFolder = ScreenCaptureManager.currentSubdirectory.value
@@ -311,7 +302,8 @@ class ScreenshotService : android.app.Service() {
         }
         if (ScreenCaptureManager.isReady()) {
             showFloatingControls()
-            FloatingCaptureOverlay.showStatus(
+            FloatingCaptureOverlay.showSavedMessage(
+                applicationContext,
                 getString(R.string.capture_saved_chip, folderLabel, count)
             )
         }
@@ -351,7 +343,7 @@ class ScreenshotService : android.app.Service() {
                 showFloatingControls()
                 if (accepted) {
                     if (successChipMessage != null) {
-                        FloatingCaptureOverlay.showStatus(successChipMessage)
+                        FloatingCaptureOverlay.showSavedMessage(applicationContext, successChipMessage)
                     } else {
                         Toast.makeText(
                             applicationContext,

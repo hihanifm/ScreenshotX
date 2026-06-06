@@ -39,6 +39,7 @@ object ScreenCaptureManager {
     private const val IMAGE_MAX_IMAGES = 4
     private const val PREFS_NAME = "screenshot3_preferences"
     private const val KEY_REQUIRE_CONFIRMATION = "require_confirmation"
+    private const val KEY_SCROLL_CAPTURE = "scroll_capture_enabled"
 
     private val _isSessionActive = MutableStateFlow(false)
     val isSessionActive: StateFlow<Boolean> = _isSessionActive.asStateFlow()
@@ -51,6 +52,9 @@ object ScreenCaptureManager {
 
 private val _requiresConfirmation = MutableStateFlow(false)
     val requiresConfirmation: StateFlow<Boolean> = _requiresConfirmation.asStateFlow()
+
+    private val _scrollCaptureEnabled = MutableStateFlow(false)
+    val scrollCaptureEnabled: StateFlow<Boolean> = _scrollCaptureEnabled.asStateFlow()
 
     @Volatile
     private var preferences: SharedPreferences? = null
@@ -65,6 +69,7 @@ private val _requiresConfirmation = MutableStateFlow(false)
             val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             preferences = prefs
             _requiresConfirmation.value = prefs.getBoolean(KEY_REQUIRE_CONFIRMATION, false)
+            _scrollCaptureEnabled.value = prefs.getBoolean(KEY_SCROLL_CAPTURE, false)
             preferencesInitialized = true
         }
     }
@@ -277,6 +282,15 @@ private val _requiresConfirmation = MutableStateFlow(false)
     }
 
     fun shouldConfirmBeforeSaving(): Boolean = _requiresConfirmation.value
+
+    fun updateScrollCaptureEnabled(context: Context, enabled: Boolean) {
+        ensurePreferences(context)
+        if (_scrollCaptureEnabled.value == enabled) return
+        _scrollCaptureEnabled.value = enabled
+        preferences?.edit()?.putBoolean(KEY_SCROLL_CAPTURE, enabled)?.apply()
+    }
+
+    fun isScrollCaptureEnabled(): Boolean = _scrollCaptureEnabled.value
 
     fun getFolderLabel(context: Context, folder: String = currentSubdirectory.value): String {
         val current = sanitizeSubdirectory(folder)

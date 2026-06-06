@@ -33,6 +33,7 @@ object FloatingCaptureOverlay {
     private var toolbarView: View? = null
     private var toolbarBackdropView: View? = null
     private var toolbarWindowManager: WindowManager? = null
+    private var savedMessageRunnable: Runnable? = null
 
     fun show(
         context: Context,
@@ -229,22 +230,31 @@ object FloatingCaptureOverlay {
     }
 
     /**
-     * Morphs the toolbar into a confirmation message: removes the tap-to-dismiss
-     * backdrop, hides the action buttons, and centers the message in the bar.
+     * Standalone transient "Saved in {category}" bar at the bottom of the screen,
+     * styled like the scroll toolbar (buttons hidden, centered text). Auto-dismisses.
+     * Used for ALL save confirmations so feedback is consistent whether scroll
+     * capture is on or off. Non-touchable — purely informational.
      */
-    fun showScrollToolbarMessage(message: String) {
-        toolbarBackdropView?.let { bd ->
-            try { toolbarWindowManager?.removeView(bd) } catch (_: IllegalArgumentException) {}
+    fun showSavedMessage(context: Context, message: String) {
+        hideScrollToolbar(context)
+
+        val appContext = context.applicationContext
+        val wm = appContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        toolbarWindowManager = wm
+
+        val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        } else {
+            @Suppress("DEPRECATION")
+            WindowManager.LayoutParams.TYPE_PHONE
         }
-        toolbarBackdropView = null
 
-        val toolbar = toolbarView ?: return
-        // Keep the bar's footprint (XML minWidth) and center the message in it.
-        (toolbar as? LinearLayout)?.gravity = Gravity.CENTER
-
-        toolbar.findViewById<ImageButton>(R.id.toolbarScrollMoreButton)?.visibility = View.GONE
-        toolbar.findViewById<ImageButton>(R.id.toolbarDoneButton)?.visibility = View.GONE
-        toolbar.findViewById<TextView>(R.id.toolbarLabel)?.apply {
+        val inflater = LayoutInflater.from(appContext)
+        val bar = inflater.inflate(R.layout.overlay_scroll_toolbar, null)
+        bar.findViewById<ImageButton>(R.id.toolbarScrollMoreButton)?.visibility = View.GONE
+        bar.findViewById<ImageButton>(R.id.toolbarDoneButton)?.visibility = View.GONE
+        (bar as? LinearLayout)?.gravity = Gravity.CENTER
+        bar.findViewById<TextView>(R.id.toolbarLabel)?.apply {
             text = message
             maxWidth = Int.MAX_VALUE
             gravity = Gravity.CENTER
@@ -255,9 +265,38 @@ object FloatingCaptureOverlay {
                 layoutParams = lp
             }
         }
+
+        val navBarHeight = getNavBarHeight(appContext)
+        val bottomMargin = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            16f,
+            appContext.resources.displayMetrics
+        ).roundToInt() + navBarHeight
+
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            overlayType,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+            y = bottomMargin
+        }
+
+        toolbarView = bar
+        wm.addView(bar, params)
+
+        val runnable = Runnable { hideScrollToolbar(appContext) }
+        savedMessageRunnable = runnable
+        bar.postDelayed(runnable, SAVED_MESSAGE_DURATION_MS)
     }
 
     fun hideScrollToolbar(context: Context) {
+        savedMessageRunnable?.let { toolbarView?.removeCallbacks(it) }
+        savedMessageRunnable = null
         val wm = toolbarWindowManager ?: return
         toolbarView?.let {
             try { wm.removeView(it) } catch (_: IllegalArgumentException) {}
@@ -369,6 +408,7 @@ object FloatingCaptureOverlay {
     private const val NO_SAVED_POSITION = Int.MIN_VALUE
     private const val STATUS_VISIBLE_DURATION_MS = 1000L
     private const val STATUS_FADE_DURATION_MS = 150L
+    private const val SAVED_MESSAGE_DURATION_MS = 1300L
 
     private fun clampPosition(
         lp: WindowManager.LayoutParams,
