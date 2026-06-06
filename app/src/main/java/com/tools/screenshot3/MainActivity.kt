@@ -1075,7 +1075,7 @@ fun MainScreen(
                                 }
                                 TextButton(
                                     onClick = {
-                                        context.startActivity(Intent(context, AboutActivity::class.java))
+                                        context.startActivity(Intent(context, UserGuideActivity::class.java))
                                     }
                                 ) {
                                     Text(text = stringResource(R.string.button_help))

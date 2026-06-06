@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Screenshot Manager · User Guide</title>
+  <style>
+    :root {
+      --bg: #f4f8ff;
+      --surface: #ffffff;
+      --text: #16233b;
+      --muted: #5f6f8e;
+      --primary: #0a65d9;
+      --primary-dark: #084ea9;
+      --warn: #e38a16;
+      --good: #1f9d57;
+      --shadow: 0 18px 42px rgba(10, 62, 138, 0.12);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(102, 175, 255, 0.22), transparent 32%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      line-height: 1.55;
+    }
+
+    .page {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 20px 16px 48px;
+    }
+
+    .hero,
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 20px;
+      margin-bottom: 16px;
+    }
+
+    .hero {
+      background: linear-gradient(145deg, #0a65d9 0%, #4ea0ff 100%);
+      color: #ffffff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -60px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 { font-size: 30px; line-height: 1.15; margin-bottom: 10px; }
+    h2 { font-size: 22px; margin-bottom: 6px; }
+    h3 { font-size: 16px; margin-bottom: 4px; }
+
+    .hero p { color: rgba(255, 255, 255, 0.92); max-width: 600px; }
+    .hero p + p { margin-top: 10px; }
+
+    .section-intro { color: var(--muted); margin-bottom: 16px; }
+
+    .list { padding-left: 22px; margin: 8px 0 0; }
+    .list li + li { margin-top: 10px; }
+
+    .callout {
+      border-left: 5px solid var(--warn);
+      background: #fff8eb;
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: #775113;
+      margin-top: 16px;
+    }
+
+    .callout.good {
+      border-left-color: var(--good);
+      background: #effaf2;
+      color: #15623a;
+    }
+
+    /* permission / step rows */
+    .rows { display: grid; gap: 12px; margin-top: 12px; }
+    .row {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #f7faff;
+      border: 1px solid #e6eefb;
+    }
+    .row .badge {
+      flex: 0 0 auto;
+      width: 34px; height: 34px;
+      border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 18px;
+      background: rgba(10, 101, 217, 0.1);
+    }
+    .row .body { flex: 1 1 auto; }
+    .row .why { color: var(--muted); font-size: 14px; }
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(10, 101, 217, 0.12);
+      color: var(--primary-dark);
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .tag.optional { background: rgba(95, 111, 142, 0.15); color: var(--muted); }
+    .tag.scroll { background: rgba(31, 157, 87, 0.15); color: var(--good); }
+
+    /* horizontal screenshot strip */
+    .shots {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding: 4px 2px 12px;
+      margin-top: 16px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .shot {
+      flex: 0 0 auto;
+      width: 220px;
+      scroll-snap-align: start;
+    }
+    .shot img {
+      width: 100%;
+      height: 440px;
+      object-fit: cover;
+      object-position: top center;
+      border-radius: 18px;
+      border: 1px solid #dde7f6;
+      background: #eef3fb;
+      display: block;
+    }
+    .shot figcaption {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .swipe-hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .toc {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .toc a {
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      color: var(--primary-dark);
+      background: rgba(10, 101, 217, 0.08);
+      padding: 6px 12px;
+      border-radius: 999px;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 12px;
+    }
+
+    @media (min-width: 640px) {
+      .page { padding: 28px 22px 56px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+
+    <section class="hero">
+      <div class="eyebrow">Welcome &amp; thank you</div>
+      <h1>Thanks for helping make AI better, one screenshot at a time. 📷</h1>
+      <p>This quick guide walks you through setup and the two ways to capture. It takes a couple of minutes — then you're collecting.</p>
+      <p><strong>Your privacy comes first:</strong> the app never uploads anything. Every screenshot stays on your phone. You collect, you zip and upload them yourself, and then you can delete the app. That's it.</p>
+      <nav class="toc" aria-label="Sections">
+        <a href="#permissions">Permissions</a>
+        <a href="#setup">Setup</a>
+        <a href="#snap">Simple capture</a>
+        <a href="#scroll">Scroll capture</a>
+        <a href="#about">About &amp; settings</a>
+      </nav>
+    </section>
+
+    <section class="card" id="permissions">
+      <h2>🔐 First, a few permissions</h2>
+      <p class="section-intro">Android asks for these one at a time. Don't worry — nothing leaves your device. Each one just lets the app do its job. Tap <strong>Allow</strong> as they come up.</p>
+      <div class="rows">
+        <div class="row">
+          <div class="badge">🪟</div>
+          <div class="body">
+            <h3>Display over other apps</h3>
+            <div class="why">Shows the floating capture button on top of whatever app you're in. On the next screen, find this app and turn the toggle on.</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="badge">📊</div>
+          <div class="body">
+            <h3>Usage access <span class="tag optional">optional</span></h3>
+            <div class="why">Lets saved files include the current app's name (like <em>amazon</em> or <em>chrome</em>) in the filename. You can skip it and still capture — filenames just won't have the app name.</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="badge">↕️</div>
+          <div class="body">
+            <h3>Accessibility service <span class="tag scroll">scroll mode only</span></h3>
+            <div class="why">Only needed if you turn on Scroll capture. It lets the app scroll the screen for you so it can stitch a long screenshot. Enable it under Settings → Accessibility → Installed apps.</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="badge">🖼️</div>
+          <div class="body">
+            <h3>Photos &amp; media</h3>
+            <div class="why">Lets the app save screenshots and read back your collections so it can show counts and let you browse.</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="badge">🔔</div>
+          <div class="body">
+            <h3>Notifications</h3>
+            <div class="why">Capture runs as a foreground service, which Android requires a notification for. It just keeps the capture session alive.</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="badge">🎥</div>
+          <div class="body">
+            <h3>Record screen</h3>
+            <div class="why">This is how the screenshot is actually taken. Android shows a one-time "Start recording?" prompt — tap <strong>Start now</strong>. It only captures when you press the button.</div>
+          </div>
+        </div>
+      </div>
+      <div class="shots">
+        <figure class="shot"><img src="images/perm-overlay.png" alt="Display over other apps permission screen"><figcaption>Display over other apps</figcaption></figure>
+        <figure class="shot"><img src="images/perm-usage.png" alt="Usage access permission screen"><figcaption>Usage access (optional)</figcaption></figure>
+        <figure class="shot"><img src="images/perm-accessibility.png" alt="Accessibility service toggle"><figcaption>Accessibility (scroll only)</figcaption></figure>
+        <figure class="shot"><img src="images/perm-storage.png" alt="Photos and media permission prompt"><figcaption>Photos &amp; media</figcaption></figure>
+        <figure class="shot"><img src="images/perm-notification.png" alt="Notifications permission prompt"><figcaption>Notifications</figcaption></figure>
+        <figure class="shot"><img src="images/perm-screenrecord.png" alt="Start recording prompt"><figcaption>Record screen</figcaption></figure>
+      </div>
+      <p class="swipe-hint">← swipe to see all the prompts. They'll look much like this on your phone.</p>
+    </section>
+
+    <section class="card" id="setup">
+      <h2>🗂️ Set up a collection</h2>
+      <p class="section-intro">Collections are just named folders that keep your screenshots organized. Pick one of the built-in categories or make your own.</p>
+      <ol class="list">
+        <li>Open the app. You'll see the main screen with the setup card and your collections.</li>
+        <li>Pick a collection from the list, or tap <strong>Add Collection</strong>, type a name, and save it.</li>
+        <li>The selected collection is highlighted — everything you capture goes there until you switch.</li>
+      </ol>
+      <div class="shots">
+        <figure class="shot"><img src="images/setup-main.png" alt="Main screen with collections"><figcaption>Main screen</figcaption></figure>
+        <figure class="shot"><img src="images/setup-add-collection.png" alt="Add collection dialog"><figcaption>Add a collection</figcaption></figure>
+        <figure class="shot"><img src="images/setup-selected.png" alt="Selected collection highlighted"><figcaption>Collection selected</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="card" id="snap">
+      <h2>📸 Capture: simple snap</h2>
+      <p class="section-intro">The default mode. One tap of the floating button grabs whatever's on screen.</p>
+      <ol class="list">
+        <li>Open the app or website you want to capture.</li>
+        <li>Tap the floating capture button. The screenshot saves to your selected collection.</li>
+        <li>A little <strong>"Saved in {collection}"</strong> chip confirms it. If you turned on <em>Ask before saving</em>, you'll get a preview with <strong>Yes / No</strong> first.</li>
+      </ol>
+      <div class="callout good">Tip: long-press the floating button to jump back into the app, and drag it anywhere if it's in the way.</div>
+      <div class="shots">
+        <figure class="shot"><img src="images/snap-button.png" alt="Floating capture button"><figcaption>Floating button</figcaption></figure>
+        <figure class="shot"><img src="images/snap-preview.png" alt="Preview confirm dialog"><figcaption>Ask before saving</figcaption></figure>
+        <figure class="shot"><img src="images/snap-saved.png" alt="Saved confirmation chip"><figcaption>Saved chip</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="card" id="scroll">
+      <h2>📜 Capture: scroll &amp; stitch</h2>
+      <p class="section-intro">For long pages — chats, feeds, articles. The app scrolls for you and stitches the frames into one tall image.</p>
+      <ol class="list">
+        <li>Turn on <strong>Scroll capture</strong> in the setup card. The first time, you'll be asked to enable the accessibility service.</li>
+        <li>Tap the floating button for the first frame. A bottom toolbar appears.</li>
+        <li>Tap <strong>↓ Scroll &amp; capture</strong> as many times as you need, then tap <strong>✓ Done</strong> (or tap outside the toolbar).</li>
+        <li>The stitched image saves to your collection — same <em>"Saved in {collection}"</em> confirmation.</li>
+      </ol>
+      <div class="callout">Scroll capture stops automatically after a generous number of frames so it never runs forever.</div>
+      <div class="shots">
+        <figure class="shot"><img src="images/scroll-toggle.png" alt="Scroll capture toggle"><figcaption>Enable scroll mode</figcaption></figure>
+        <figure class="shot"><img src="images/scroll-toolbar.png" alt="Scroll more / done toolbar"><figcaption>Scroll-more / done toolbar</figcaption></figure>
+        <figure class="shot"><img src="images/scroll-saved.png" alt="Stitched scroll capture saved"><figcaption>Stitched &amp; saved</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="card" id="about">
+      <h2>⚙️ About &amp; settings</h2>
+      <p class="section-intro">The About screen (the <strong>Help!</strong> button on the main screen) is home to the extras.</p>
+      <div class="rows">
+        <div class="row"><div class="badge">📦</div><div class="body"><h3>Zip &amp; export</h3><div class="why">When a collection is ready, zip it and upload the file to the shared repository. Zips land in your Downloads.</div></div></div>
+        <div class="row"><div class="badge">🔎</div><div class="body"><h3>Browse</h3><div class="why">Open a collection to review what you've captured before you zip it.</div></div></div>
+        <div class="row"><div class="badge">🌐</div><div class="body"><h3>Language</h3><div class="why">Switch the app language — English, Korean, and more.</div></div></div>
+        <div class="row"><div class="badge">🎨</div><div class="body"><h3>Image format</h3><div class="why">JPEG saves space; PNG keeps text and edges sharper. Pick what fits the task.</div></div></div>
+        <div class="row"><div class="badge">✅</div><div class="body"><h3>Ask before saving</h3><div class="why">Turn on a quick preview-and-confirm step after each capture.</div></div></div>
+        <div class="row"><div class="badge">📐</div><div class="body"><h3>Strip scroll nav bar</h3><div class="why">Removes the Android navigation bar from stitched scroll images for a cleaner result.</div></div></div>
+        <div class="row"><div class="badge">📈</div><div class="body"><h3>Stats</h3><div class="why">See how many screenshots you've collected, broken down by app or by category.</div></div></div>
+      </div>
+      <div class="shots">
+        <figure class="shot"><img src="images/about-screen.png" alt="About screen"><figcaption>About screen</figcaption></figure>
+        <figure class="shot"><img src="images/about-zip.png" alt="Zip and export a collection"><figcaption>Zip &amp; export</figcaption></figure>
+        <figure class="shot"><img src="images/about-format.png" alt="Image format setting"><figcaption>Image format</figcaption></figure>
+        <figure class="shot"><img src="images/about-language.png" alt="Language picker"><figcaption>Language</figcaption></figure>
+        <figure class="shot"><img src="images/about-stats.png" alt="Stats screen"><figcaption>Stats</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🎉 You're all set</h2>
+      <p>Collect a varied batch, zip it, and upload to the shared repository. When you're done, you can simply delete the app — nothing was ever stored anywhere but your phone.</p>
+      <p class="footer-note">Thanks again for helping improve AI quality. 📷✨</p>
+    </section>
+
+  </main>
+</body>
+</html>

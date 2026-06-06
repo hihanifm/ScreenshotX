@@ -1,19 +1,18 @@
 package com.tools.screenshot3
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.net.Uri
 import android.os.Build
 import android.text.format.DateFormat
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -22,9 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -85,23 +81,13 @@ fun AboutScreen(
     context: Context,
     activity: ComponentActivity
 ) {
-    var showReleaseNotes by remember { mutableStateOf(false) }
     var showFeedbackDialog by remember { mutableStateOf(false) }
-    var showSetupHelp by remember { mutableStateOf(false) }
-    var showCollectionHelp by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     val requiresConfirmation by ScreenCaptureManager.requiresConfirmation.collectAsState()
     val imageFormat by ScreenCaptureManager.imageFormat.collectAsState()
     val stripScrollNavBar by ScreenCaptureManager.stripScrollNavBar.collectAsState()
     val currentLanguage = LocaleHelper.getSavedLanguage(context)
-    val releaseNotesText = remember {
-        try {
-            context.assets.open("release_notes.txt").bufferedReader().use { it.readText() }
-        } catch (e: Exception) {
-            "Unable to load release notes."
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -121,20 +107,12 @@ fun AboutScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // How To Setup button
+        // User Guide button
         Button(
-            onClick = { showSetupHelp = true },
+            onClick = { context.startActivity(Intent(context, UserGuideActivity::class.java)) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(R.string.button_how_to_setup))
-        }
-
-        // How To Collect Screenshots button
-        Button(
-            onClick = { showCollectionHelp = true },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.button_how_to_collect))
+            Text(text = stringResource(R.string.button_user_guide))
         }
 
         // Language selection button
@@ -319,12 +297,19 @@ fun AboutScreen(
             Text(text = stringResource(R.string.button_feedback))
         }
 
-        // ReleaseNotes button
+        // Online User Guide button (opens the GitHub Pages docs guide)
         Button(
-            onClick = { showReleaseNotes = true },
+            onClick = {
+                context.startActivity(
+                    Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://hihanifm.github.io/ScreenshotX/user-guide.html")
+                    )
+                )
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(R.string.button_release_notes))
+            Text(text = stringResource(R.string.button_user_guide_online))
         }
 
         // Close button at bottom
@@ -333,49 +318,6 @@ fun AboutScreen(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(text = stringResource(R.string.setup_help_close))
-        }
-    }
-
-    // Release Notes Dialog
-    if (showReleaseNotes) {
-        Dialog(onDismissRequest = { showReleaseNotes = false }) {
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                tonalElevation = 6.dp,
-                shadowElevation = 12.dp,
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = stringResource(R.string.button_release_notes),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f, fill = true)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        Text(
-                            text = releaseNotesText,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    Button(
-                        onClick = { showReleaseNotes = false },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(text = stringResource(R.string.setup_help_close))
-                    }
-                }
-            }
         }
     }
 
@@ -395,122 +337,6 @@ fun AboutScreen(
                 }
             }
         )
-    }
-
-    // Setup Help Dialog
-    if (showSetupHelp) {
-        Dialog(onDismissRequest = { showSetupHelp = false }) {
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                tonalElevation = 6.dp,
-                shadowElevation = 12.dp,
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .fillMaxHeight(0.9f)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = stringResource(R.string.setup_help_title),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    val horizontalScrollState = rememberScrollState()
-                    val setupFlowResId = remember {
-                        context.resources.getIdentifier("screenshot_setup_flow", "drawable", context.packageName)
-                    }
-                    if (setupFlowResId != 0) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f, fill = true)
-                                .horizontalScroll(horizontalScrollState)
-                        ) {
-                            Image(
-                                painter = painterResource(setupFlowResId),
-                                contentDescription = stringResource(R.string.setup_flow_content_description),
-                                modifier = Modifier.fillMaxHeight(),
-                                contentScale = ContentScale.FillHeight
-                            )
-                        }
-                    } else {
-                        Text(
-                            text = stringResource(R.string.setup_help_missing_art),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Button(
-                        onClick = { showSetupHelp = false },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text(text = stringResource(R.string.setup_help_close))
-                    }
-                }
-            }
-        }
-    }
-
-    // Collection Help Dialog
-    if (showCollectionHelp) {
-        Dialog(onDismissRequest = { showCollectionHelp = false }) {
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                tonalElevation = 6.dp,
-                shadowElevation = 12.dp,
-                modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .fillMaxHeight(0.9f)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = stringResource(R.string.collection_help_title),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    val horizontalScrollState = rememberScrollState()
-                    val collectionFlowResId = remember {
-                        context.resources.getIdentifier("screenshot_collection_flow", "drawable", context.packageName)
-                    }
-                    if (collectionFlowResId != 0) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .weight(1f, fill = true)
-                                .horizontalScroll(horizontalScrollState)
-                        ) {
-                            Image(
-                                painter = painterResource(collectionFlowResId),
-                                contentDescription = stringResource(R.string.collection_flow_content_description),
-                                modifier = Modifier.fillMaxHeight(),
-                                contentScale = ContentScale.FillHeight
-                            )
-                        }
-                    } else {
-                        Text(
-                            text = stringResource(R.string.collection_help_missing_art),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Button(
-                        onClick = { showCollectionHelp = false },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text(text = stringResource(R.string.setup_help_close))
-                    }
-                }
-            }
-        }
     }
 
     // Language Selection Dialog
