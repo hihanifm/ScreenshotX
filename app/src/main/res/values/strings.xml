@@ -79,8 +79,8 @@
     <string name="setting_image_format_png">PNG</string>
     <string name="setting_strip_scroll_nav_bar_title">Strip scroll nav bar</string>
     <string name="setting_strip_scroll_nav_bar_subtitle">Remove the Android Back, Home, and Recents bar from stitched scroll captures.</string>
-    <string name="setting_scroll_capture_title">Scroll capture</string>
-    <string name="setting_scroll_capture_subtitle">Scroll and stitch long pages after each capture (needs accessibility).</string>
+    <string name="setting_scroll_capture_title">Enhanced capture mode</string>
+    <string name="setting_scroll_capture_subtitle">Enables scroll capture and bottom capture preview bar.</string>
     <string name="usage_access_title">Enable app-name filenames</string>
     <string name="usage_access_body">Allow Usage Access so saved screenshots can include the foreground app name, like Amazon or Chrome.</string>
     <string name="usage_access_open_settings">Enable Usage Access</string>
@@ -121,6 +121,7 @@
     <string name="error_zip_username_empty" tools:ignore="MissingTranslation">Please enter a username.</string>
     <string name="accessibility_service_description">Enables scroll capture by performing scroll gestures on the current app.</string>
     <string name="scroll_more_button">Scroll down and capture more</string>
+    <string name="delete_button">Discard capture</string>
     <string name="scroll_capture_started">Tap ↓ to scroll &amp; capture more, or ✓ to save</string>
     <string name="scroll_capture_count">%1$d captures stitched</string>
     <string name="scroll_capture_limit">Scroll capture limit reached — saving image</string>

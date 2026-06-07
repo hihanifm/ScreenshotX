@@ -2,12 +2,16 @@ package com.tools.screenshot3.scroll
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Matrix
 import android.net.Uri
 import android.util.Log
 import com.tools.screenshot3.capture.ScreenCaptureManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 class ScrollCaptureSession(context: Context, initialBitmap: Bitmap) {
 
@@ -91,11 +95,28 @@ class ScrollCaptureSession(context: Context, initialBitmap: Bitmap) {
         return uri
     }
 
-    fun takeResultBitmap(): Bitmap? {
-        isActive = false
-        val bitmap = stitchedBitmap ?: return null
-        stitchedBitmap = null
-        return bitmap
+    /**
+     * Returns a scaled copy of the current stitched draft for the live preview card.
+     * Scaled to [targetWidthPx] preserving aspect ratio; if the result would exceed
+     * [maxHeightPx] only the top portion is kept (a long page shows its head, not a
+     * sliver). Always a fresh copy — never a reference to the recycled stitched bitmap,
+     * so the caller owns and must recycle it.
+     */
+    fun buildThumbnail(targetWidthPx: Int, maxHeightPx: Int): Bitmap? {
+        val src = stitchedBitmap ?: return null
+        if (src.width <= 0 || src.height <= 0 || targetWidthPx <= 0 || maxHeightPx <= 0) return null
+        val scale = targetWidthPx.toFloat() / src.width
+        val fullHeight = (src.height * scale).roundToInt().coerceAtLeast(1)
+        val finalHeight = min(fullHeight, maxHeightPx)
+        return try {
+            val out = Bitmap.createBitmap(targetWidthPx, finalHeight, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(out)
+            canvas.drawBitmap(src, Matrix().apply { setScale(scale, scale) }, null)
+            out
+        } catch (t: Throwable) {
+            Log.w(TAG, "Thumbnail build failed", t)
+            null
+        }
     }
 
     fun cancel() {

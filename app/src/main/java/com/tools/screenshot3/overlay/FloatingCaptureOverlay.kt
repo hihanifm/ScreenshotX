@@ -4,6 +4,7 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.os.Build
 import android.util.TypedValue
@@ -15,6 +16,7 @@ import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.tools.screenshot3.R
@@ -182,8 +184,10 @@ object FloatingCaptureOverlay {
     fun showScrollToolbar(
         context: Context,
         folderLabel: String,
+        thumbnail: Bitmap?,
         onScrollMore: () -> Unit,
-        onDone: () -> Unit
+        onDone: () -> Unit,
+        onDelete: () -> Unit
     ) {
         hideScrollToolbar(context)
 
@@ -238,20 +242,27 @@ object FloatingCaptureOverlay {
         val label = toolbar.findViewById<TextView>(R.id.toolbarLabel)
         label.text = folderLabel
 
+        val previewCard = toolbar.findViewById<View>(R.id.toolbarPreviewCard)
+        val thumbView = toolbar.findViewById<ImageView>(R.id.toolbarThumbnail)
+        if (thumbnail != null) {
+            thumbView.setImageBitmap(thumbnail)
+            previewCard.visibility = View.VISIBLE
+        } else {
+            previewCard.visibility = View.GONE
+        }
+
         toolbar.findViewById<ImageButton>(R.id.toolbarScrollMoreButton).setOnClickListener {
             onScrollMore()
         }
         toolbar.findViewById<ImageButton>(R.id.toolbarDoneButton).setOnClickListener {
             onDone()
         }
+        toolbar.findViewById<ImageButton>(R.id.toolbarDeleteButton).setOnClickListener {
+            onDelete()
+        }
 
         toolbarView = toolbar
         wm.addView(toolbar, toolbarParams)
-    }
-
-    fun updateScrollToolbarLabel(text: String) {
-        val toolbar = toolbarView ?: return
-        toolbar.findViewById<TextView>(R.id.toolbarLabel)?.text = text
     }
 
     /**
@@ -276,9 +287,11 @@ object FloatingCaptureOverlay {
 
         val inflater = LayoutInflater.from(appContext)
         val bar = inflater.inflate(R.layout.overlay_scroll_toolbar, null)
+        bar.findViewById<View>(R.id.toolbarPreviewCard)?.visibility = View.GONE
         bar.findViewById<ImageButton>(R.id.toolbarScrollMoreButton)?.visibility = View.GONE
         bar.findViewById<ImageButton>(R.id.toolbarDoneButton)?.visibility = View.GONE
-        (bar as? LinearLayout)?.gravity = Gravity.CENTER
+        bar.findViewById<ImageButton>(R.id.toolbarDeleteButton)?.visibility = View.GONE
+        bar.findViewById<LinearLayout>(R.id.toolbarActionRow)?.gravity = Gravity.CENTER
         bar.findViewById<TextView>(R.id.toolbarLabel)?.apply {
             text = message
             maxWidth = Int.MAX_VALUE

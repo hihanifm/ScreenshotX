@@ -1,46 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="64dp"
-    android:background="@drawable/scroll_toolbar_background"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingStart="16dp"
-    android:paddingEnd="10dp">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/toolbarLabel"
+    <!-- Floating preview card (Samsung-tray style), sits above the action bar, left-aligned.
+         Grows upward as the stitched draft gets taller. Hidden until a thumbnail is set. -->
+    <FrameLayout
+        android:id="@+id/toolbarPreviewCard"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="14dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:maxWidth="200dp"
-        android:textColor="@android:color/white"
-        android:textSize="15sp"
-        android:textStyle="bold" />
+        android:layout_gravity="start"
+        android:layout_marginStart="6dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/preview_card_background"
+        android:padding="4dp"
+        android:visibility="gone">
 
-    <ImageButton
-        android:id="@+id/toolbarScrollMoreButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginEnd="8dp"
-        android:background="@drawable/toolbar_button_circle"
-        android:contentDescription="@string/scroll_more_button"
-        android:padding="12dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_scroll_down"
-        android:tint="@android:color/white" />
+        <ImageView
+            android:id="@+id/toolbarThumbnail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/scroll_capture_started"
+            android:scaleType="fitCenter" />
+    </FrameLayout>
 
-    <ImageButton
-        android:id="@+id/toolbarDoneButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="@drawable/toolbar_button_circle_accent"
-        android:contentDescription="@string/scroll_capture_started"
-        android:padding="12dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_done"
-        android:tint="@android:color/white" />
+    <!-- Action bar -->
+    <LinearLayout
+        android:id="@+id/toolbarActionRow"
+        android:layout_width="wrap_content"
+        android:layout_height="64dp"
+        android:background="@drawable/scroll_toolbar_background"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="10dp">
+
+        <TextView
+            android:id="@+id/toolbarLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="14dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:maxWidth="200dp"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/toolbarScrollMoreButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/toolbar_button_circle"
+            android:contentDescription="@string/scroll_more_button"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_scroll_down"
+            android:tint="@android:color/white" />
+
+        <ImageButton
+            android:id="@+id/toolbarDoneButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/toolbar_button_circle_accent"
+            android:contentDescription="@string/scroll_capture_started"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_done"
+            android:tint="@android:color/white" />
+
+        <ImageButton
+            android:id="@+id/toolbarDeleteButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/toolbar_button_circle"
+            android:contentDescription="@string/delete_button"
+            android:padding="12dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_delete"
+            android:tint="#FFF87171" />
+
+    </LinearLayout>
 
 </LinearLayout>

@@ -197,25 +197,6 @@ object ScreenCaptureManager {
             success
         }
 
-    fun queueBitmapForPreview(
-        context: Context,
-        bitmap: Bitmap,
-        subDirectory: String? = null
-    ): Boolean {
-        ensurePreferences(context)
-        synchronized(this) {
-            if (pendingCapture != null) {
-                Log.w(TAG, "SSM-preview-pending-existing")
-                return false
-            }
-            val targetDirectory = sanitizeSubdirectory(subDirectory ?: _currentSubdirectory.value)
-            val appSuffix = ForegroundAppResolver.resolveForegroundAppSuffix(context.applicationContext)
-            setPendingCapture(bitmap, targetDirectory, appSuffix)
-            Log.d(TAG, "SSM-preview-queued targetDir=$targetDirectory")
-            return true
-        }
-    }
-
     suspend fun captureAndStore(context: Context, subDirectory: String? = null): Uri? =
         withContext(Dispatchers.IO) {
             if (!_isSessionActive.value) return@withContext null
