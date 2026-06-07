@@ -2008,7 +2008,7 @@ private fun StatsScreen(
     val expandedKey = remember { mutableStateOf<String?>(null) }
 
     val groups: List<StatGroup> = remember(stats, statsTab.value, collectionLabelFor) {
-        if (statsTab.value == 0) {
+        if (statsTab.value == 1) {
             stats.map { stat ->
                 StatGroup(
                     key = stat.appKey,
@@ -2092,7 +2092,7 @@ private fun StatsScreen(
                             statsTab.value = 0
                             expandedKey.value = null
                         },
-                        text = { Text(stringResource(R.string.stats_tab_apps)) }
+                        text = { Text(stringResource(R.string.stats_tab_categories)) }
                     )
                     Tab(
                         selected = statsTab.value == 1,
@@ -2100,7 +2100,7 @@ private fun StatsScreen(
                             statsTab.value = 1
                             expandedKey.value = null
                         },
-                        text = { Text(stringResource(R.string.stats_tab_categories)) }
+                        text = { Text(stringResource(R.string.stats_tab_apps)) }
                     )
                     Tab(
                         selected = statsTab.value == 2,

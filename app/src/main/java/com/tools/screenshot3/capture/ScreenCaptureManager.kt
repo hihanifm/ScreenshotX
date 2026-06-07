@@ -238,11 +238,16 @@ object ScreenCaptureManager {
         }
     }
 
-    suspend fun saveStitchedBitmap(context: Context, bitmap: Bitmap): Uri? =
+    /**
+     * Saves an in-memory bitmap. [isScroll] tags the file with the scroll marker for stats — pass
+     * true only when the user actually stitched frames (scrollCount > 0), not merely because
+     * enhanced capture mode is enabled.
+     */
+    suspend fun saveStitchedBitmap(context: Context, bitmap: Bitmap, isScroll: Boolean): Uri? =
         withContext(Dispatchers.IO) {
             val subDirectory = _currentSubdirectory.value
             val appSuffix = ForegroundAppResolver.resolveForegroundAppSuffix(context.applicationContext)
-            val uri = saveBitmap(context, bitmap, subDirectory, appSuffix, isScroll = true)
+            val uri = saveBitmap(context, bitmap, subDirectory, appSuffix, isScroll = isScroll)
             if (uri != null) {
                 _captureEvents.value = System.currentTimeMillis()
             }

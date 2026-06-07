@@ -277,7 +277,7 @@ class ScreenshotService : android.app.Service() {
         }
 
         val uri = withContext(Dispatchers.IO) {
-            ScreenCaptureManager.saveStitchedBitmap(applicationContext, bitmap)
+            ScreenCaptureManager.saveStitchedBitmap(applicationContext, bitmap, isScroll = false)
         }
         bitmap.recycle()
         delay(OVERLAY_RESUME_DELAY_MS)

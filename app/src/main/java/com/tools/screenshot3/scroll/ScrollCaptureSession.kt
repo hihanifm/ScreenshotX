@@ -88,7 +88,9 @@ class ScrollCaptureSession(context: Context, initialBitmap: Bitmap) {
     suspend fun saveResult(context: Context): Uri? {
         val bitmap = stitchedBitmap ?: return null
         isActive = false
-        val uri = ScreenCaptureManager.saveStitchedBitmap(context, bitmap)
+        // Only a true scroll capture if the user actually stitched at least one extra frame;
+        // tapping Done on the first frame is a normal single-image capture.
+        val uri = ScreenCaptureManager.saveStitchedBitmap(context, bitmap, isScroll = scrollCount > 0)
         if (uri != null) {
             Log.d(TAG, "Scroll capture saved: $uri")
         }
