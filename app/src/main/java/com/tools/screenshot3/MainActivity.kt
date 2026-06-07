@@ -166,7 +166,7 @@ class MainActivity : ComponentActivity() {
     private val overlayPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             if (canDrawOverlays()) {
-                ensurePermissionsAndRequestCapture()
+                startCaptureFlow()
             } else {
                 Toast.makeText(this, R.string.overlay_permission_denied, Toast.LENGTH_SHORT).show()
             }
