@@ -187,7 +187,8 @@ object FloatingCaptureOverlay {
         thumbnail: Bitmap?,
         onScrollMore: () -> Unit,
         onDone: () -> Unit,
-        onDelete: () -> Unit
+        onDelete: () -> Unit,
+        onPreviewTap: () -> Unit
     ) {
         hideScrollToolbar(context)
 
@@ -247,6 +248,7 @@ object FloatingCaptureOverlay {
         if (thumbnail != null) {
             thumbView.setImageBitmap(thumbnail)
             previewCard.visibility = View.VISIBLE
+            previewCard.setOnClickListener { onPreviewTap() }
         } else {
             previewCard.visibility = View.GONE
         }

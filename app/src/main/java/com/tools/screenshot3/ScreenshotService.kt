@@ -316,7 +316,8 @@ class ScreenshotService : android.app.Service() {
             newThumbnail,
             onScrollMore = { handleScrollMore(session) },
             onDone = { handleScrollDone(session) },
-            onDelete = { handleScrollDelete(session) }
+            onDelete = { handleScrollDelete(session) },
+            onPreviewTap = { handleScrollOpen(session) }
         )
 
         val old = currentThumbnail
@@ -377,6 +378,40 @@ class ScreenshotService : android.app.Service() {
                 if (ScreenCaptureManager.isReady()) showFloatingControls()
             }
             scrollDoneInProgress = false
+        }
+    }
+
+    /** Tap preview = save the current draft directly, then open it in the system gallery. */
+    private fun handleScrollOpen(session: ScrollCaptureSession) {
+        if (scrollDoneInProgress) return
+        scrollDoneInProgress = true
+        serviceScope.launch {
+            FloatingCaptureOverlay.hideScrollToolbar(this@ScreenshotService)
+            scrollCaptureSession = null
+            recycleThumbnail()
+
+            val uri = session.saveResult(applicationContext)
+            delay(OVERLAY_RESUME_DELAY_MS)
+            if (uri != null) {
+                if (ScreenCaptureManager.isReady()) showFloatingControls()
+                openInGallery(uri)
+            } else {
+                Toast.makeText(applicationContext, getString(R.string.capture_failed), Toast.LENGTH_SHORT).show()
+                if (ScreenCaptureManager.isReady()) showFloatingControls()
+            }
+            scrollDoneInProgress = false
+        }
+    }
+
+    private fun openInGallery(uri: android.net.Uri) {
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "image/*")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivity(intent)
+        } catch (_: android.content.ActivityNotFoundException) {
+            // Image is already saved; no viewer app available — nothing more to do.
         }
     }
 
