@@ -80,7 +80,6 @@ fun AboutScreen(
     context: Context,
     activity: ComponentActivity
 ) {
-    var showFeedbackDialog by remember { mutableStateOf(false) }
     var showLanguageDialog by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     val requiresConfirmation by ScreenCaptureManager.requiresConfirmation.collectAsState()
@@ -286,7 +285,7 @@ fun AboutScreen(
 
         // Feedback button
         Button(
-            onClick = { showFeedbackDialog = true },
+            onClick = { context.startActivity(Intent(context, FeedbackActivity::class.java)) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -303,24 +302,6 @@ fun AboutScreen(
         ) {
             Text(text = stringResource(R.string.setup_help_close))
         }
-    }
-
-    // Feedback Dialog
-    if (showFeedbackDialog) {
-        AlertDialog(
-            onDismissRequest = { showFeedbackDialog = false },
-            title = {
-                Text(text = stringResource(R.string.feedback_dialog_title))
-            },
-            text = {
-                Text(text = stringResource(R.string.feedback_dialog_message))
-            },
-            confirmButton = {
-                TextButton(onClick = { showFeedbackDialog = false }) {
-                    Text(text = stringResource(R.string.setup_help_close))
-                }
-            }
-        )
     }
 
     // Language Selection Dialog

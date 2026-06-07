@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feedback</title>
+  <style>
+    :root {
+      --bg: #f4f8ff;
+      --surface: #ffffff;
+      --text: #16233b;
+      --muted: #5f6f8e;
+      --primary-dark: #084ea9;
+      --accent: #0a65d9;
+      --shadow: 0 18px 42px rgba(10, 62, 138, 0.12);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(102, 175, 255, 0.22), transparent 32%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      line-height: 1.55;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+
+    .hero,
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 20px;
+      margin-bottom: 16px;
+    }
+
+    .hero {
+      background: linear-gradient(145deg, #0a65d9 0%, #4ea0ff 100%);
+      color: #ffffff;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -60px -60px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 30px;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .hero p {
+      color: rgba(255, 255, 255, 0.92);
+      max-width: 560px;
+    }
+
+    .list {
+      padding-left: 22px;
+      margin: 0;
+    }
+
+    .list li + li {
+      margin-top: 10px;
+    }
+
+    .contact {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #eef5ff;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+    }
+
+    @media (min-width: 640px) {
+      .page {
+        padding: 28px 22px 48px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Thank you</div>
+      <h1>Thank you for using Screenshot S.</h1>
+      <p>Your screenshots, testing, and notes help make the app better for everyone.</p>
+    </section>
+
+    <section class="card">
+      <h2>💬 Share any feedback</h2>
+      <p>If anything feels confusing, broken, slow, or missing, please share any feedback you have.</p>
+      <ol class="list">
+        <li>Tell us what you were trying to do.</li>
+        <li>Mention what happened instead.</li>
+        <li>Share any ideas that would make the app easier to use.</li>
+      </ol>
+      <div class="contact">Feel free to reach out to MNOs Lab NJ.</div>
+      <p class="footer-note">Short notes are helpful too. Every bit of feedback helps.</p>
+    </section>
+  </main>
+</body>
+</html>
