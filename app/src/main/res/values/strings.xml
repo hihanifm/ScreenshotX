@@ -109,7 +109,6 @@
     <string name="setup_flow_content_description">Illustration of the setup flow</string>
     <string name="setup_help_missing_art" tools:ignore="MissingTranslation">Setup illustration unavailable. Please add setup_flow.png to res/drawable(-nodpi).</string>
     <string name="collection_help_title">How collections work</string>
-    <string name="button_user_guide_online">Online User Guide</string>
     <string name="user_guide_title">User Guide</string>
     <string name="user_guide_unavailable" tools:ignore="MissingTranslation">User guide unavailable. Please add user_guide.html to app/src/main/assets.</string>
     <string name="collection_guide_title">Collector Guide</string>

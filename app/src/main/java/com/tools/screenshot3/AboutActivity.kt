@@ -3,7 +3,6 @@ package com.tools.screenshot3
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
-import android.net.Uri
 import android.os.Build
 import android.text.format.DateFormat
 import androidx.activity.ComponentActivity
@@ -295,21 +294,6 @@ fun AboutScreen(
             )
         ) {
             Text(text = stringResource(R.string.button_feedback))
-        }
-
-        // Online User Guide button (opens the GitHub Pages docs guide)
-        Button(
-            onClick = {
-                context.startActivity(
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://hihanifm.github.io/ScreenshotX/docs/user-guide.html")
-                    )
-                )
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(R.string.button_user_guide_online))
         }
 
         // Close button at bottom
