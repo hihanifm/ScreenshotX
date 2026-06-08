@@ -231,11 +231,6 @@ class MainActivity : ComponentActivity() {
                             showUsageAccessHelp.value = false
                             pendingCaptureAfterUsageAccess.value = false
                         },
-                        onContinueWithoutUsageAccess = {
-                            showUsageAccessHelp.value = false
-                            pendingCaptureAfterUsageAccess.value = false
-                            ensurePermissionsAndRequestCapture()
-                        },
                         onOpenUsageAccessFromDialog = {
                             showUsageAccessHelp.value = false
                             pendingCaptureAfterUsageAccess.value = true
@@ -652,7 +647,6 @@ fun MainScreen(
     onOpenUsageAccessSettings: () -> Unit,
     showUsageAccessHelp: Boolean = false,
     onDismissUsageAccessHelp: () -> Unit = {},
-    onContinueWithoutUsageAccess: () -> Unit = {},
     onOpenUsageAccessFromDialog: () -> Unit = {},
     isFirstLaunch: Boolean = false,
     showOverlayPermissionHelp: Boolean = false,
@@ -1465,15 +1459,8 @@ fun MainScreen(
                 }
             },
             dismissButton = {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    TextButton(onClick = onContinueWithoutUsageAccess) {
-                        Text(text = stringResource(R.string.usage_access_continue_without_suffix))
-                    }
-                    TextButton(onClick = onDismissUsageAccessHelp) {
-                        Text(text = stringResource(R.string.overlay_permission_help_close))
-                    }
+                TextButton(onClick = onDismissUsageAccessHelp) {
+                    Text(text = stringResource(R.string.overlay_permission_help_close))
                 }
             }
         )
@@ -2410,7 +2397,6 @@ fun MainScreenPreview() {
             onOpenUsageAccessSettings = {},
             showUsageAccessHelp = false,
             onDismissUsageAccessHelp = {},
-            onContinueWithoutUsageAccess = {},
             onOpenUsageAccessFromDialog = {},
             isFirstLaunch = false,
             contentPadding = PaddingValues()
