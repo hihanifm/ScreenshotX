@@ -177,11 +177,9 @@ class MainActivity : ComponentActivity() {
 
     private val usageAccessSettingsLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            // The AppOps grant may not have propagated yet when this fires; the
+            // pending-continue is handled in onResume, where the state is fresh.
             refreshUsageAccessState()
-            if (hasUsageAccess.value && pendingCaptureAfterUsageAccess.value) {
-                pendingCaptureAfterUsageAccess.value = false
-                ensurePermissionsAndRequestCapture()
-            }
         }
 
     override fun attachBaseContext(newBase: Context) {
@@ -192,6 +190,12 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         refreshUsageAccessState()
         hasAccessibilityService.value = ScrollCaptureAccessibilityService.isEnabled(this)
+        // Continue the capture flow once Usage Access has actually propagated
+        // after returning from Settings (the launcher result can be too early).
+        if (hasUsageAccess.value && pendingCaptureAfterUsageAccess.value) {
+            pendingCaptureAfterUsageAccess.value = false
+            startCaptureFlow()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
