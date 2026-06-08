@@ -38,8 +38,7 @@ fi
 
 export ANDROID_SERIAL="$serial"
 
-echo "Building and installing signed release app..."
-./gradlew installRelease
-
-echo "Launching Screenshot S on $serial..."
-adb -s "$serial" shell am start -n com.tools.screenshot3/.MainActivity
+# Device selection lives here (bash is good at adb parsing); build/install/launch
+# lives in the Gradle task (good at build logic). buildInternalRelease honors ANDROID_SERIAL.
+echo "Building, installing, and launching signed release app on $serial..."
+./gradlew buildInternalRelease

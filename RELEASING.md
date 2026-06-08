@@ -8,9 +8,9 @@
 Manual steps (equivalent):
 
 1. Build the release APK:
-   - Terminal: `./scripts/build-release.sh`
-   - Android Studio: Gradle tool window -> `app` -> `Tasks` -> `distribution` -> `buildInternalRelease`
-   - Install and launch on a device: `./run_release.sh`
+   - Terminal (build only, with size comparison): `./scripts/build-release.sh`
+   - Android Studio: Gradle tool window -> `app` -> `Tasks` -> `distribution` -> `buildInternalRelease` — builds, installs, and launches on a connected device (set `ANDROID_SERIAL` if multiple are connected).
+   - Equivalent from a terminal: `./run_release.sh`
 2. Create and push the release tag:
    `git tag v2.1.2 && git push origin v2.1.2`
 3. In GitHub, open Releases, draft a new release, choose `v2.1.2`, and upload the APK from `app/build/outputs/apk/release/`.

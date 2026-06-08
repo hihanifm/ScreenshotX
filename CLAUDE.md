@@ -18,10 +18,10 @@ Screenshot3 is an Android app (package `com.tools.screenshot3`) that captures sc
 ```
 
 Helper scripts (root):
-- `./run_debug.sh [serial]` / `./run_release.sh [serial]` — build, install (`installDebug`/`installRelease`), and launch on a device. Auto-selects the single physical device; pass a serial when multiple targets are connected.
+- `./run_release.sh [serial]` — auto-selects the single physical device (pass a serial when multiple targets are connected), then delegates to the `buildInternalRelease` Gradle task to build, install, and launch the signed release. For debug, use Android Studio's Run button or `./gradlew installDebug`.
 - `./scripts/build-release.sh` — runs `assembleRelease` and prints release-vs-debug APK size delta.
 - `./run_e2e_test.sh` — builds/installs the androidTest APK and runs `ScreenshotCaptureE2ETest` via `am instrument`.
-- Gradle task `buildInternalRelease` (group `distribution`) — signed, shrunk release APK; see `RELEASING.md` for the tag-and-publish flow.
+- Gradle task `buildInternalRelease` (group `distribution`) — builds, installs, and launches the signed, shrunk release APK on a connected device (honors `ANDROID_SERIAL`); see `RELEASING.md` for the tag-and-publish flow.
 
 APK output is renamed to `screenshot_manager-{buildType}-{versionName}_{versionCode}.apk`. Version code is auto-generated from build timestamp (`MMddyyHHmm`). The `release` build type is `isMinifyEnabled`/`isShrinkResources` true and currently signed with the **debug** signing config (placeholder) — swap to a real keystore before public distribution.
 

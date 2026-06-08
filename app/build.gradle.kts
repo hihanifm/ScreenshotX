@@ -70,8 +70,9 @@ android {
 
 tasks.register("buildInternalRelease") {
     group = "distribution"
-    description = "Build the signed, shrunk internal release APK."
-    dependsOn("assembleRelease")
+    description = "Build, install, and launch the signed, shrunk internal release APK on a connected device."
+    // installRelease builds (assembleRelease) then installs onto the connected device.
+    dependsOn("installRelease")
 
     doLast {
         val releaseDir = layout.buildDirectory.dir("outputs/apk/release").get().asFile
@@ -82,9 +83,22 @@ tasks.register("buildInternalRelease") {
 
         if (releaseApk != null) {
             println("Internal release APK: ${releaseApk.absolutePath}")
-            println("Tip: run ./scripts/build-release.sh for size comparison output.")
         } else {
             println("Release APK not found in ${releaseDir.absolutePath}")
+        }
+
+        // Launch the app after install. Honors ANDROID_SERIAL when multiple targets are connected.
+        val serial = System.getenv("ANDROID_SERIAL")?.takeIf { it.isNotBlank() }
+        val command = buildList {
+            add("adb")
+            if (serial != null) { add("-s"); add(serial) }
+            addAll(listOf("shell", "am", "start", "-n", "com.tools.screenshot3/.MainActivity"))
+        }
+        try {
+            project.exec { commandLine(command) }
+            println("Installed and launched Screenshot S${serial?.let { " on $it" } ?: ""}.")
+        } catch (e: Exception) {
+            println("Installed, but could not auto-launch (${e.message}). Open the app manually.")
         }
     }
 }
