@@ -22,7 +22,7 @@ android {
         // Generate version code from build timestamp in format mmddyyhhmm
         val buildTime = SimpleDateFormat("MMddyyHHmm").format(Date())
         versionCode = buildTime.toLong().toInt()
-        versionName = "3.0.0"
+        versionName = "3.0.1"
         resValue("string", "generated_build_time_millis", System.currentTimeMillis().toString())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
