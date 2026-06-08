@@ -59,7 +59,6 @@
     <string name="usage_access_open_settings">Bật quyền truy cập mức sử dụng</string>
     <string name="usage_access_dialog_title">Cho phép tên tệp kèm tên ứng dụng?</string>
     <string name="usage_access_dialog_body">Android yêu cầu quyền truy cập mức sử dụng trong Cài đặt trước khi Screenshot S có thể thêm tên ứng dụng hiện tại vào tệp.</string>
-    <string name="usage_access_continue_without_suffix">Tiếp tục không dùng tên ứng dụng</string>
     <string name="button_help">Trợ giúp!</string>
     <string name="button_learn_more">Tìm hiểu thêm</string>
     <string name="button_collection_help">Trợ giúp!</string>

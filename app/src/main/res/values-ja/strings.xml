@@ -59,7 +59,6 @@
     <string name="usage_access_open_settings">使用状況へのアクセスを有効化</string>
     <string name="usage_access_dialog_title">ファイル名にアプリ名を使用しますか？</string>
     <string name="usage_access_dialog_body">Screenshot Sが現在のアプリ名をファイル名に追加するには、Android設定で使用状況へのアクセスが必要です。</string>
-    <string name="usage_access_continue_without_suffix">アプリ名なしで続行</string>
     <string name="button_help">ヘルプ</string>
     <string name="button_learn_more">詳しく見る</string>
     <string name="button_collection_help">ヘルプ</string>

@@ -59,7 +59,6 @@
     <string name="usage_access_open_settings">Activer l\'accès à l\'utilisation</string>
     <string name="usage_access_dialog_title">Autoriser les noms de fichiers avec l\'application ?</string>
     <string name="usage_access_dialog_body">Android exige l\'accès à l\'utilisation dans les paramètres avant que Screenshot S puisse ajouter le nom de l\'application actuelle au fichier.</string>
-    <string name="usage_access_continue_without_suffix">Continuer sans le nom de l\'application</string>
     <string name="button_help">Aide !</string>
     <string name="button_learn_more">En savoir plus</string>
     <string name="button_collection_help">Aide !</string>

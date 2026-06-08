@@ -59,7 +59,6 @@
     <string name="usage_access_open_settings">Nutzungszugriff aktivieren</string>
     <string name="usage_access_dialog_title">Dateinamen mit App-Namen erlauben?</string>
     <string name="usage_access_dialog_body">Android benötigt den Nutzungszugriff in den Einstellungen, bevor Screenshot S die aktuelle App zum Dateinamen hinzufügen kann.</string>
-    <string name="usage_access_continue_without_suffix">Ohne App-Namen fortfahren</string>
     <string name="button_help">Hilfe!</string>
     <string name="button_learn_more">Mehr erfahren</string>
     <string name="button_collection_help">Hilfe!</string>

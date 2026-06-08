@@ -59,7 +59,6 @@
     <string name="usage_access_open_settings">Включить доступ к истории использования</string>
     <string name="usage_access_dialog_title">Разрешить имена файлов с названием приложения?</string>
     <string name="usage_access_dialog_body">Android требует предоставить доступ к истории использования в Настройках, прежде чем Screenshot S сможет добавить название текущего приложения в файл.</string>
-    <string name="usage_access_continue_without_suffix">Продолжить без названия приложения</string>
     <string name="button_help">Помощь!</string>
     <string name="button_learn_more">Подробнее</string>
     <string name="button_collection_help">Помощь!</string>

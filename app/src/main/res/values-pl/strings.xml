@@ -59,7 +59,6 @@
     <string name="usage_access_open_settings">Włącz dostęp do informacji o użyciu</string>
     <string name="usage_access_dialog_title">Zezwolić na nazwy plików z nazwą aplikacji?</string>
     <string name="usage_access_dialog_body">Android wymaga dostępu do informacji o użyciu w Ustawieniach, zanim Screenshot S będzie mógł dodać nazwę bieżącej aplikacji do pliku.</string>
-    <string name="usage_access_continue_without_suffix">Kontynuuj bez nazwy aplikacji</string>
     <string name="button_help">Pomoc!</string>
     <string name="button_learn_more">Dowiedz się więcej</string>
     <string name="button_collection_help">Pomoc!</string>

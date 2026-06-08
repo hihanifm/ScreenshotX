@@ -59,7 +59,6 @@
     <string name="usage_access_open_settings">उपयोग एक्सेस चालू करें</string>
     <string name="usage_access_dialog_title">ऐप नाम वाले फ़ाइल नाम की अनुमति दें?</string>
     <string name="usage_access_dialog_body">Screenshot S द्वारा फ़ाइल नाम में वर्तमान ऐप जोड़ने से पहले Android को सेटिंग में उपयोग एक्सेस चाहिए।</string>
-    <string name="usage_access_continue_without_suffix">ऐप नाम के बिना जारी रखें</string>
     <string name="button_help">मदद!</string>
     <string name="button_learn_more">और जानें</string>
     <string name="button_collection_help">मदद!</string>

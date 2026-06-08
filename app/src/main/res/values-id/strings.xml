@@ -59,7 +59,6 @@
     <string name="usage_access_open_settings">Aktifkan akses penggunaan</string>
     <string name="usage_access_dialog_title">Izinkan nama file dengan nama aplikasi?</string>
     <string name="usage_access_dialog_body">Android memerlukan akses penggunaan di Setelan sebelum Screenshot S dapat menambahkan nama aplikasi saat ini ke file.</string>
-    <string name="usage_access_continue_without_suffix">Lanjutkan tanpa nama aplikasi</string>
     <string name="button_help">Bantuan!</string>
     <string name="button_learn_more">Pelajari lebih lanjut</string>
     <string name="button_collection_help">Bantuan!</string>

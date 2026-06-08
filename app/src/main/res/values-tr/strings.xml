@@ -59,7 +59,6 @@
     <string name="usage_access_open_settings">Kullanım erişimini etkinleştir</string>
     <string name="usage_access_dialog_title">Uygulama adı içeren dosya adlarına izin verilsin mi?</string>
     <string name="usage_access_dialog_body">Screenshot S geçerli uygulamanın adını dosyaya ekleyebilmeden önce Android, Ayarlar içinde kullanım erişimi ister.</string>
-    <string name="usage_access_continue_without_suffix">Uygulama adı olmadan devam et</string>
     <string name="button_help">Yardım!</string>
     <string name="button_learn_more">Daha fazla bilgi</string>
     <string name="button_collection_help">Yardım!</string>
